@@ -39,6 +39,7 @@ const AddCoffee = () => {
     category: '',
   });
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const handleChange = (e) => {
     setFormData({
@@ -48,7 +49,15 @@ const AddCoffee = () => {
   };
 
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -342,6 +351,30 @@ const AddCoffee = () => {
                   }
                 }}
               />
+
+              {imagePreview && (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: { xs: '200px', sm: '300px', md: '400px' },
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(5px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    '& img': {
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }
+                  }}
+                >
+                  <img src={imagePreview} alt="Preview" />
+                </Box>
+              )}
 
               <Box 
                 sx={{ 
