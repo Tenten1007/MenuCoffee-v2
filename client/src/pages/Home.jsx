@@ -611,16 +611,17 @@ const Home = () => {
                 '& .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.7)' },
               }}
             >
-              <MenuItem value="น้อย">น้อย</MenuItem>
+              <MenuItem value="ไม่หวาน">ไม่หวาน</MenuItem>
+              <MenuItem value="หวานน้อย">หวานน้อย</MenuItem>
               <MenuItem value="ปกติ">ปกติ</MenuItem>
-              <MenuItem value="มาก">มาก</MenuItem>
+              <MenuItem value="หวานมาก">หวานมาก</MenuItem>
             </Select>
           </FormControl>
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>อุณหภูมิ</InputLabel>
+            <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>ประเภทเมนู</InputLabel>
             <Select
               value={selectedCoffee?.temperature || 'ร้อน'}
-              label="อุณหภูมิ"
+              label="ประเภทเมนู"
               onChange={(e) => setSelectedCoffee({ ...selectedCoffee, temperature: e.target.value })}
               sx={{
                 color: 'white',
@@ -632,6 +633,7 @@ const Home = () => {
             >
               <MenuItem value="ร้อน">ร้อน</MenuItem>
               <MenuItem value="เย็น">เย็น</MenuItem>
+              <MenuItem value="ปั่น">ปั่น</MenuItem>
             </Select>
           </FormControl>
           <TextField
