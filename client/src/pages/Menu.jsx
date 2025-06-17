@@ -102,7 +102,7 @@ const Menu = () => {
       sx={{
         width: '100vw',
         minHeight: '100vh',
-        paddingTop: { xs: '56px', sm: '64px' },
+        paddingTop: { xs: '64px', sm: '72px' },
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         position: 'relative',
         '&::before': {
@@ -375,7 +375,20 @@ const Menu = () => {
           <Fab
             color="primary"
             aria-label="add"
-            sx={{ position: 'fixed', bottom: 16, right: 16 }}
+            sx={{
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              background: 'linear-gradient(135deg, #FFD700 0%, #FFA000 100%)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+              color: '#1a1a1a',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #FFA000 0%, #FFC107 100%)',
+                boxShadow: '0 10px 40px 0 rgba(31, 38, 135, 0.5)',
+              }
+            }}
             onClick={() => navigate('/add-coffee')}
           >
             <AddIcon />

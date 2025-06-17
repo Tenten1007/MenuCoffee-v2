@@ -271,7 +271,7 @@ const Home = () => {
           zIndex: 1,
           flexGrow: 1,
           width: '100%',
-          paddingTop: { xs: '56px', sm: '64px' }
+          paddingTop: { xs: '70px', sm: '80px' }
         }}
       >
         <Box 
