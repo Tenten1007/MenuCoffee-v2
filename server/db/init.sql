@@ -3,15 +3,18 @@ CREATE DATABASE IF NOT EXISTS coffee_menu_db;
 USE coffee_menu_db;
 
 -- Create tables
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS staff (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    role ENUM('admin', 'staff', 'customer') NOT NULL DEFAULT 'customer',
+    role ENUM('admin', 'staff') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Insert initial staff
+INSERT INTO staff (username, password, role) VALUES 
+('admin', '$2b$10$YourHashedPasswordHere', 'admin');
 
 CREATE TABLE IF NOT EXISTS coffees (
     id INT AUTO_INCREMENT PRIMARY KEY,

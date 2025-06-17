@@ -8,6 +8,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { createInitialStaff } = require('./controllers/staff.controller');
 const staffController = require('./controllers/staff.controller');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const app = express();
@@ -92,26 +93,36 @@ async function initializeDatabase() {
     const initSqlPath = path.join(__dirname, 'db', 'init.sql');
     const sql = fs.readFileSync(initSqlPath, 'utf8');
 
-    // แยกคำสั่ง SQL และรันเฉพาะคำสั่งสร้างตาราง
-    const createTableStatements = sql
+    // แยกคำสั่ง SQL และรันทุกคำสั่ง
+    const statements = sql
       .split(';')
-      .filter(stmt => stmt.trim().toLowerCase().startsWith('create table'));
+      .filter(stmt => stmt.trim());
     
-    for (const statement of createTableStatements) {
+    for (const statement of statements) {
       if (statement.trim()) {
-        await pool.query(statement);
+        try {
+          await pool.query(statement);
+        } catch (error) {
+          console.error('Error executing SQL statement:', error);
+          console.error('Statement:', statement);
+        }
       }
     }
-    console.log('Tables created successfully');
+    console.log('Database schema and initial data created successfully');
 
-    // Check if initial user exists
-    const [users] = await pool.query('SELECT COUNT(*) as count FROM users');
-    if (users[0].count === 0) {
-      console.log('Creating initial user...');
-      await createInitialStaff();
-      console.log('Initial user created');
-    } else {
-      console.log('Users already exist, skipping initial user creation');
+    // ตรวจสอบว่ามีพนักงานในระบบหรือไม่
+    try {
+      const [staff] = await pool.query('SELECT COUNT(*) as count FROM staff');
+      if (staff[0].count === 0) {
+        console.log('Creating initial staff...');
+        await createInitialStaff();
+        console.log('Initial staff created');
+      } else {
+        console.log('Staff already exist, skipping initial staff creation');
+      }
+    } catch (error) {
+      console.error('Error checking staff table:', error);
+      throw error;
     }
   } catch (error) {
     console.error('Error initializing database:', error);
