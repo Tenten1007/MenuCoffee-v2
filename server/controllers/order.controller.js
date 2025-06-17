@@ -147,12 +147,23 @@ exports.update = async (req, res) => {
       return res.status(404).json({ message: 'ไม่พบออเดอร์' });
     }
 
-    const [updatedOrder] = await pool.query(
+    // Fetch the updated order with its items
+    const [updatedOrderResult] = await pool.query(
       'SELECT * FROM orders WHERE id = ?',
       [req.params.id]
     );
+    const [updatedOrderItems] = await pool.query(
+      'SELECT * FROM order_items WHERE order_id = ?',
+      [req.params.id]
+    );
 
-    res.json(updatedOrder[0]);
+    const fullUpdatedOrder = { ...updatedOrderResult[0], items: updatedOrderItems };
+
+    // Emit a Socket.IO event for the updated order
+    const io = req.app.get('socketio');
+    io.emit('updateOrder', fullUpdatedOrder);
+
+    res.json(fullUpdatedOrder);
   } catch (error) {
     console.error('Error updating order:', error);
     res.status(500).json({ message: error.message });
@@ -170,6 +181,10 @@ exports.delete = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'ไม่พบออเดอร์' });
     }
+
+    // Emit a Socket.IO event for the deleted order
+    const io = req.app.get('socketio');
+    io.emit('deleteOrder', req.params.id);
 
     res.json({ message: 'ลบออเดอร์สำเร็จ' });
   } catch (error) {
