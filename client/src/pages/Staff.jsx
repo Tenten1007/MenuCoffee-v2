@@ -52,6 +52,7 @@ import {
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import io from 'socket.io-client';
 
 const Staff = () => {
   const [orders, setOrders] = useState([]);
@@ -75,9 +76,32 @@ const Staff = () => {
     }
     fetchOrders();
 
-    const interval = setInterval(fetchOrders, 30000);
-    return () => clearInterval(interval);
+    const socket = io('http://localhost:5000');
 
+    socket.on('newOrder', (newOrder) => {
+      console.log('New order received:', newOrder);
+      setOrders((prevOrders) => [newOrder, ...prevOrders]);
+    });
+
+    socket.on('updateOrder', (updatedOrder) => {
+      console.log('Order updated:', updatedOrder);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === updatedOrder.id ? updatedOrder : order
+        )
+      );
+    });
+
+    socket.on('deleteOrder', (deletedOrderId) => {
+      console.log('Order deleted:', deletedOrderId);
+      setOrders((prevOrders) =>
+        prevOrders.filter((order) => order.id !== deletedOrderId)
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [isLoggedIn, navigate]);
 
   const fetchOrders = async () => {
@@ -150,7 +174,6 @@ const Staff = () => {
       }
 
       if (response.ok) {
-        fetchOrders();
         setSnackbar({
           open: true,
           message: 'อัปเดตสถานะคำสั่งซื้อสำเร็จ',

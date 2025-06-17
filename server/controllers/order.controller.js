@@ -52,6 +52,10 @@ exports.create = async (req, res) => {
 
       const responseOrder = { ...newOrder[0], items: newOrderItems };
 
+      // Emit a Socket.IO event for the new order
+      const io = req.app.get('socketio');
+      io.emit('newOrder', responseOrder);
+
       console.log('Order created successfully:', responseOrder);
       res.status(201).json(responseOrder);
     } catch (transactionError) {

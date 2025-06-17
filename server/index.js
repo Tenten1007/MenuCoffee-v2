@@ -4,12 +4,24 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const mysql = require('mysql2/promise');
+const http = require('http');
+const { Server } = require('socket.io');
 const { createInitialStaff } = require('./controllers/staff.controller');
 const staffController = require('./controllers/staff.controller');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
+
+app.set('socketio', io);
 
 // Middleware
 app.use(cors());
@@ -117,6 +129,6 @@ initializeDatabase()
     process.exit(1);
   });
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 }); 
