@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "multer": "^2.0.1"
+  },
+  "scripts": {
+    "dev": "npx concurrently \"npm run dev --prefix client\" \"npm start --prefix server\""
   }
 }
