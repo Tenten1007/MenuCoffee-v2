@@ -229,10 +229,16 @@ const Home = () => {
 
   const categories = [
     { value: 'all', label: 'ทั้งหมด' },
+    { value: 'recommended', label: 'เมนูแนะนำ' },
     { value: 'coffee', label: 'กาแฟ' },
+    { value: 'matcha', label: 'มัทฉะ' },
     { value: 'tea', label: 'ชา' },
+    { value: 'milk', label: 'นม' },
     { value: 'italian-soda', label: 'อิตาเลี่ยนโซดา' },
-    { value: 'bakery', label: 'เบเกอรี่' }
+    { value: 'snack', label: 'ขนม' },
+    { value: 'bakery', label: 'เบเกอรี่' },
+    { value: 'leaf-tea', label: 'ใบชา' },
+    { value: 'food', label: 'อาหาร' }
   ];
 
   return (

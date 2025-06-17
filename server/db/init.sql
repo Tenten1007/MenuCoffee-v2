@@ -84,6 +84,30 @@ INSERT INTO coffees (name, description, price, image, category) VALUES
 
 -- เบเกอรี่
 ('ครัวซองต์', 'ขนมปังชั้นกรอบนอกนุ่มใน', 35.00, 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'bakery'),
-('มัฟฟิน', 'ขนมปังนุ่มรสช็อคโกแลต', 30.00, 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'bakery'),
+('มัฟฟิน', 'ขนมปังนุ่มรสช็อคโกแลต', 30.00, 'https://images.unsplash.com/photo-1607958996333-41aaf7caefaa?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'bakery'),
 ('บราวนี่', 'ขนมหวานรสช็อคโกแลต', 40.00, 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'bakery'),
-('ชีสเค้ก', 'เค้กชีสเนื้อนุ่ม', 45.00, 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'bakery'); 
+('ชีสเค้ก', 'เค้กชีสเนื้อนุ่ม', 45.00, 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'bakery'),
+
+-- เมนูแนะนำ
+('กาแฟเย็นสูตรพิเศษ', 'กาแฟเย็นผสมคาราเมลและวิปครีม', 65.00, 'https://images.unsplash.com/photo-1559868725-d7e7d6b3e3e0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'recommended'),
+('ชาผลไม้รวม', 'ชาผลไม้สดชื่น', 60.00, 'https://images.unsplash.com/photo-1576092769492-c9e7e7e6b0d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'recommended'),
+
+-- นม
+('นมสด', 'นมสดแท้ 100%', 30.00, 'https://images.unsplash.com/photo-1628191012173-b3c4f7b0f0b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'milk'),
+('นมช็อคโกแลต', 'นมสดผสมช็อคโกแลต', 35.00, 'https://images.unsplash.com/photo-1628191012173-b3c4f7b0f0b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'milk'),
+
+-- ขนม
+('คุกกี้ช็อกโกแลตชิพ', 'คุกกี้อบกรอบช็อกโกแลตชิพ', 25.00, 'https://images.unsplash.com/photo-1582236113110-3e2b2e2d2e2c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'snack'),
+('โดนัท', 'โดนัทเคลือบน้ำตาล', 20.00, 'https://images.unsplash.com/photo-1551036663-4c9d2dae8d3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'snack'),
+
+-- ใบชา
+('ชาอู่หลง', 'ชาจีนคั่วหอม', 50.00, 'https://images.unsplash.com/photo-1567675971512-1f251c6c5a3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'leaf-tea'),
+('ชาคาโมมายล์', 'ชาสมุนไพรช่วยผ่อนคลาย', 45.00, 'https://images.unsplash.com/photo-1567675971512-1f251c6c5a3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'leaf-tea'),
+
+-- มัทฉะ
+('มัทฉะลาเต้', 'มัทฉะเข้มข้นผสมนม', 60.00, 'https://images.unsplash.com/photo-1625902148102-3f1a0a5b2b2b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'matcha'),
+('มัทฉะเพียว', 'มัทฉะ 100%', 55.00, 'https://images.unsplash.com/photo-1625902148102-3f1a0a5b2b2b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'matcha'),
+
+-- อาหาร
+('แซนด์วิชแฮมชีส', 'แซนด์วิชแฮมและชีส', 70.00, 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'food'),
+('สลัดอกไก่', 'สลัดผักสดพร้อมอกไก่ย่าง', 85.00, 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'food'); 

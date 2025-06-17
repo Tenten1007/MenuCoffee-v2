@@ -70,11 +70,20 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { name, description, price, category } = req.body;
-    let imagePath = req.body.currentImage;
+    let imagePath = null; // Initialize as null
 
     // ถ้ามีการอัพโหลดรูปใหม่
     if (req.file) {
       imagePath = `/uploads/${req.file.filename}`;
+    } else if (req.body.currentImage) {
+      // ถ้าไม่มีการอัพโหลดรูปใหม่ แต่มี currentImage มา (รูปเดิม)
+      // เราจะดึงเฉพาะ path ส่วนหลังจากการ base URL ออกมา
+      const baseUrl = `http://localhost:${process.env.PORT || 5000}`;
+      if (req.body.currentImage.startsWith(baseUrl)) {
+        imagePath = req.body.currentImage.substring(baseUrl.length);
+      } else {
+        imagePath = req.body.currentImage; // กรณีที่ currentImage เป็นแค่ relative path อยู่แล้ว
+      }
     }
 
     const [result] = await pool.query(
