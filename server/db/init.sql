@@ -46,10 +46,27 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 
--- Insert initial data
-INSERT INTO users (username, password, name, role) VALUES
-('admin', '$2b$10$X7UrH5UxX5UxX5UxX5UxX.5UxX5UxX5UxX5UxX5UxX5UxX5UxX5U', 'Admin User', 'admin'),
-('staff1', '$2b$10$X7UrH5UxX5UxX5UxX5UxX.5UxX5UxX5UxX5UxX5UxX5UxX5UxX5U', 'Staff User 1', 'staff');
+-- ตารางสำหรับเก็บประวัติออเดอร์
+CREATE TABLE IF NOT EXISTS order_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customerName VARCHAR(100) NOT NULL,
+    orderTime TIMESTAMP NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS order_history_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_history_id INT,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    quantity INT NOT NULL,
+    sweetness VARCHAR(50),
+    temperature VARCHAR(50),
+    notes TEXT,
+    FOREIGN KEY (order_history_id) REFERENCES order_history(id)
+);
 
 -- Insert coffee menu items
 INSERT INTO coffees (name, description, price, image, category) VALUES

@@ -9,5 +9,7 @@ router.get('/', staffAuth, orderController.findAll);
 router.get('/:id', staffAuth, orderController.findOne);
 router.put('/:id', staffAuth, orderController.update);
 router.delete('/:id', staffAuth, orderController.delete);
+router.post('/clear-old', staffAuth, orderController.clearOldOrders);
+router.get('/history', staffAuth, orderController.getOrderHistory);
 
 module.exports = router; 

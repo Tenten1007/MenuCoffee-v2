@@ -6,18 +6,25 @@ require('dotenv').config();
 // ฟังก์ชันสำหรับสร้างพนักงานเริ่มต้น
 exports.createInitialStaff = async () => {
   try {
+    console.log('Checking for existing admin user...');
     const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', ['admin']);
     
     if (rows.length === 0) {
+      console.log('No admin user found, creating new admin user...');
       const hashedPassword = await bcrypt.hash('admin123', 10);
+      console.log('Password hashed successfully');
+      
       await pool.query(
         'INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)',
         ['admin', hashedPassword, 'Admin User', 'admin']
       );
       console.log('Initial admin user created successfully');
+    } else {
+      console.log('Admin user already exists');
     }
   } catch (error) {
     console.error('Error creating initial user:', error);
+    throw error;
   }
 };
 

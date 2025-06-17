@@ -12,6 +12,7 @@ import Menu from './pages/Menu';
 import AddCoffee from './pages/AddCoffee';
 import EditCoffee from './pages/EditCoffee';
 import Staff from './pages/Staff';
+import OrderHistory from './pages/OrderHistory';
 
 const theme = createTheme({
   palette: {
@@ -49,6 +50,7 @@ function App() {
               <Route path="/add-coffee" element={<AddCoffee />} />
               <Route path="/edit-coffee/:id" element={<EditCoffee />} />
               <Route path="/staff" element={<Staff />} />
+              <Route path="/order-history" element={<OrderHistory />} />
             </Routes>
           </Box>
         </Router>
