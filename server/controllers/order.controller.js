@@ -18,24 +18,48 @@ exports.create = async (req, res) => {
       return sum + (item.price * item.quantity);
     }, 0);
     
-    console.log('Creating order with data:', {
-      customerName,
-      items: JSON.stringify(items),
-      total
-    });
+    // Start a transaction
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-    const [result] = await pool.query(
-      'INSERT INTO orders (customerName, items, status, total, orderTime) VALUES (?, ?, ?, ?, NOW())',
-      [customerName, JSON.stringify(items), 'รอดำเนินการ', total]
-    );
+      // Insert the main order into the orders table
+      const [orderResult] = await connection.query(
+        'INSERT INTO orders (customerName, status, total) VALUES (?, ?, ?)',
+        [customerName, 'รอดำเนินการ', total]
+      );
+      const orderId = orderResult.insertId;
 
-    const [newOrder] = await pool.query(
-      'SELECT * FROM orders WHERE id = ?',
-      [result.insertId]
-    );
+      // Insert each item into the order_items table
+      for (const item of items) {
+        await connection.query(
+          'INSERT INTO order_items (order_id, name, price, quantity, sweetness, temperature, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [orderId, item.name, item.price, item.quantity, item.sweetness, item.temperature, item.note]
+        );
+      }
 
-    console.log('Order created successfully:', newOrder[0]);
-    res.status(201).json(newOrder[0]);
+      await connection.commit();
+
+      // Fetch the created order with its items for the response
+      const [newOrder] = await connection.query(
+        'SELECT * FROM orders WHERE id = ?',
+        [orderId]
+      );
+      const [newOrderItems] = await connection.query(
+        'SELECT * FROM order_items WHERE order_id = ?',
+        [orderId]
+      );
+
+      const responseOrder = { ...newOrder[0], items: newOrderItems };
+
+      console.log('Order created successfully:', responseOrder);
+      res.status(201).json(responseOrder);
+    } catch (transactionError) {
+      await connection.rollback();
+      throw transactionError; // Re-throw to be caught by outer catch block
+    } finally {
+      connection.release();
+    }
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ 
@@ -46,21 +70,26 @@ exports.create = async (req, res) => {
   }
 };
 
-// Get all orders
+// Get all orders (adjust to include items)
 exports.findAll = async (req, res) => {
   try {
     const [orders] = await pool.query(
       'SELECT * FROM orders ORDER BY orderTime DESC'
     );
-    // Convert orderTime to ISO string for consistent parsing on client-side
-    const formattedOrders = orders.map(order => ({
-      ...order,
-      orderTime: order.orderTime ? new Date(order.orderTime).toISOString() : null,
-      // Also ensure items and total are correctly handled if they were part of the issue
-      items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
-      customerName: order.customerName, // Map customerName to customerName
-      totalAmount: order.total // Map total to totalAmount
+    
+    const formattedOrders = await Promise.all(orders.map(async (order) => {
+      const [items] = await pool.query(
+        'SELECT * FROM order_items WHERE order_id = ?',
+        [order.id]
+      );
+      return {
+        ...order,
+        orderTime: order.orderTime ? new Date(order.orderTime).toISOString() : null,
+        items: items,
+        totalAmount: order.total
+      };
     }));
+
     res.json(formattedOrders);
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -68,7 +97,7 @@ exports.findAll = async (req, res) => {
   }
 };
 
-// Get a single order
+// Get a single order (adjust to include items)
 exports.findOne = async (req, res) => {
   try {
     const [orders] = await pool.query(
@@ -81,13 +110,16 @@ exports.findOne = async (req, res) => {
     }
 
     const order = orders[0];
-    // Convert orderTime to ISO string and adjust other fields
+    const [items] = await pool.query(
+      'SELECT * FROM order_items WHERE order_id = ?',
+      [order.id]
+    );
+
     const formattedOrder = {
       ...order,
       orderTime: order.orderTime ? new Date(order.orderTime).toISOString() : null,
-      items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
-      customerName: order.customerName, // Map customerName to customerName
-      totalAmount: order.total // Map total to totalAmount
+      items: items,
+      totalAmount: order.total
     };
 
     res.json(formattedOrder);
