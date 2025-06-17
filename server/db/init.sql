@@ -46,20 +46,10 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 
--- Create staff table if not exists
-CREATE TABLE IF NOT EXISTS staff (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    role ENUM('admin', 'staff') NOT NULL DEFAULT 'staff',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 -- Insert initial data
 INSERT INTO users (username, password, name, role) VALUES
-('admin', '$2b$10$X7UrH5UxX5UxX5UxX5UxX.5UxX5UxX5UxX5UxX5UxX5UxX5UxX5U', 'Admin User', 'admin');
+('admin', '$2b$10$X7UrH5UxX5UxX5UxX5UxX.5UxX5UxX5UxX5UxX5UxX5UxX5UxX5U', 'Admin User', 'admin'),
+('staff1', '$2b$10$X7UrH5UxX5UxX5UxX5UxX.5UxX5UxX5UxX5UxX5UxX5UxX5UxX5U', 'Staff User 1', 'staff');
 
 -- Insert coffee menu items
 INSERT INTO coffees (name, description, price, image, category) VALUES

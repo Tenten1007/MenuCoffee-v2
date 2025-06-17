@@ -94,12 +94,10 @@ const Home = () => {
   const filterCoffees = () => {
     let filtered = [...coffees];
     
-    // Filter by category
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(coffee => coffee.category === selectedCategory);
     }
     
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(coffee => 
@@ -250,6 +248,7 @@ const Home = () => {
         position: 'relative',
         overflowX: 'hidden',
         py: 0,
+        pt: 4,
         px: { xs: 2, sm: 3, md: 4 },
         '&::before': {
           content: '""',
@@ -270,8 +269,7 @@ const Home = () => {
           position: 'relative',
           zIndex: 1,
           flexGrow: 1,
-          width: '100%',
-          paddingTop: { xs: '70px', sm: '80px' }
+          width: '100%'
         }}
       >
         <Box 

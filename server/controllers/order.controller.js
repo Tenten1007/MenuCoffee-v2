@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const pool = require('../config/db.config');
 
 // Create a new order
 exports.create = async (req, res) => {

@@ -104,14 +104,14 @@ async function initializeDatabase() {
     }
     console.log('Tables created successfully');
 
-    // ตรวจสอบว่ามีพนักงานอยู่แล้วหรือไม่
-    const [staff] = await pool.query('SELECT COUNT(*) as count FROM staff');
-    if (staff[0].count === 0) {
-      // สร้างพนักงานเริ่มต้นเฉพาะเมื่อไม่มีพนักงานในระบบ
+    // Check if initial user exists
+    const [users] = await pool.query('SELECT COUNT(*) as count FROM users');
+    if (users[0].count === 0) {
+      console.log('Creating initial user...');
       await createInitialStaff();
-      console.log('Initial staff created');
+      console.log('Initial user created');
     } else {
-      console.log('Staff already exists, skipping initial staff creation');
+      console.log('Users already exist, skipping initial user creation');
     }
   } catch (error) {
     console.error('Error initializing database:', error);
