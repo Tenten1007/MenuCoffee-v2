@@ -11,12 +11,10 @@ import {
   useTheme,
   useMediaQuery,
   Container,
-  Avatar,
-  Badge
+  Avatar
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  ShoppingCart as CartIcon,
   Person as PersonIcon,
   Logout as LogoutIcon,
   AdminPanelSettings as AdminIcon,
@@ -50,8 +48,6 @@ const Navbar = () => {
   };
 
   const isStaffPage = location.pathname === '/staff';
-  const isMenuPage = location.pathname === '/menu';
-  const showCartButton = !isStaffPage && !isMenuPage;
 
   return (
     <AppBar 
@@ -101,21 +97,6 @@ const Navbar = () => {
                   >
                     {!isMobile && 'จัดการคำสั่งซื้อ'}
                   </Button>
-                )}
-                {showCartButton && (
-                  <IconButton 
-                    color="inherit" 
-                    onClick={() => navigate('/cart')}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                      }
-                    }}
-                  >
-                    <Badge badgeContent={0} color="error">
-                      <CartIcon />
-                    </Badge>
-                  </IconButton>
                 )}
                 <IconButton
                   size="large"

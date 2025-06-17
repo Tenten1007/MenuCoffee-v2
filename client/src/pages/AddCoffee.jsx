@@ -15,10 +15,16 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const categories = [
+  { value: 'recommended', label: 'เมนูแนะนำ' },
   { value: 'coffee', label: 'กาแฟ' },
+  { value: 'matcha', label: 'มัทฉะ' },
   { value: 'tea', label: 'ชา' },
+  { value: 'milk', label: 'นม' },
   { value: 'italian-soda', label: 'อิตาเลี่ยนโซดา' },
-  { value: 'bakery', label: 'เบเกอรี่' }
+  { value: 'snack', label: 'ขนม' },
+  { value: 'bakery', label: 'เบเกอรี่' },
+  { value: 'leaf-tea', label: 'ใบชา' },
+  { value: 'food', label: 'อาหาร' }
 ];
 
 const AddCoffee = () => {
@@ -123,7 +129,7 @@ const AddCoffee = () => {
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)'
               }}
             >
-              Add New Menu
+              เพิ่มเมนูใหม่
             </Typography>
             <Typography 
               variant="subtitle1" 
@@ -132,7 +138,7 @@ const AddCoffee = () => {
                 color: 'rgba(255, 255, 255, 0.7)'
               }}
             >
-              Fill in the details below to add a new menu item
+              กรอกข้อมูลด้านล่างเพื่อเพิ่มเมนูใหม่
             </Typography>
           </Box>
 
@@ -141,7 +147,7 @@ const AddCoffee = () => {
               <TextField
                 required
                 fullWidth
-                label="Coffee Name"
+                label="ชื่อเมนู"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
@@ -173,7 +179,7 @@ const AddCoffee = () => {
                 fullWidth
                 multiline
                 rows={isMobile ? 3 : isTablet ? 4 : 6}
-                label="Description"
+                label="รายละเอียด"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -211,13 +217,13 @@ const AddCoffee = () => {
                   required
                   fullWidth
                   type="number"
-                  label="Price"
+                  label="ราคา"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
                   size={isMobile ? "small" : "medium"}
                   InputProps={{
-                    startAdornment: <Typography sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }}>$</Typography>
+                    startAdornment: <Typography sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }}>฿</Typography>
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -245,7 +251,7 @@ const AddCoffee = () => {
                   required
                   fullWidth
                   select
-                  label="Category"
+                  label="หมวดหมู่"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
@@ -310,7 +316,7 @@ const AddCoffee = () => {
                 required
                 fullWidth
                 type="file"
-                label="Coffee Image"
+                label="รูปภาพเมนู"
                 name="image"
                 onChange={handleFileChange}
                 InputLabelProps={{ shrink: true }}
@@ -357,15 +363,25 @@ const AddCoffee = () => {
                     px: { xs: 3, sm: 4, md: 6 },
                     fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' },
                     borderRadius: 2,
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    color: '#ffffff',
+                    borderColor: '#ff4444',
+                    backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                    backdropFilter: 'blur(5px)',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                      backgroundColor: 'rgba(255, 68, 68, 0.2)',
+                      borderColor: '#ff4444',
+                      color: '#ffffff',
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 15px rgba(255, 68, 68, 0.3)'
+                    },
+                    '&:active': {
+                      transform: 'translateY(1px)',
+                      backgroundColor: 'rgba(255, 68, 68, 0.3)'
                     }
                   }}
                 >
-                  Cancel
+                  ยกเลิก
                 </Button>
                 <Button
                   type="submit"
@@ -376,17 +392,25 @@ const AddCoffee = () => {
                     px: { xs: 3, sm: 4, md: 6 },
                     fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' },
                     borderRadius: 2,
-                    background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 100%)',
+                    background: 'linear-gradient(45deg, #FFD700 0%, #FFA500 100%)',
                     backdropFilter: 'blur(5px)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
+                    color: '#000000',
+                    textShadow: '0 1px 2px rgba(255,255,255,0.3)',
+                    boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                      background: 'linear-gradient(45deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.25) 100%)',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                      background: 'linear-gradient(45deg, #FFC107 0%, #FF8C00 100%)',
+                      boxShadow: '0 6px 20px rgba(255, 215, 0, 0.4)',
+                      transform: 'translateY(-2px)'
+                    },
+                    '&:active': {
+                      transform: 'translateY(1px)',
+                      boxShadow: '0 2px 10px rgba(255, 215, 0, 0.3)'
                     }
                   }}
                 >
-                  Add Menu
+                  เพิ่มเมนู
                 </Button>
               </Box>
             </Stack>
