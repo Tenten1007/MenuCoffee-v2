@@ -543,40 +543,80 @@ const Staff = () => {
                         <Divider sx={{ mb: 1.5, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <PersonIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1, fontSize: '1rem' }} />
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontWeight: 500 }}>
+                          <Typography variant="body2" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontWeight: 500 }}>
                             {order.customerName}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                           <AccessTimeIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1, fontSize: '1rem' }} />
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                          <Typography variant="body2" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                             {formatTime(order.orderTime)}
                           </Typography>
                         </Box>
                         <Box sx={{ mb: 1.5 }}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 1, mb: 0.5 }}>
+                          <Typography variant="body2" component="div" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 1, mb: 0.5 }}>
                             รายการ ({Array.isArray(order.items) ? order.items.length : 0} รายการ):
                           </Typography>
                           <List dense disablePadding>
                             {(Array.isArray(order.items) ? order.items : []).slice(0, 2).map((item, index) => (
                               <ListItem key={index} sx={{ py: 0.5, px: 0, display: 'block' }}>
                                 <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <Box>
+                                  <Box sx={{ flex: 1 }}>
                                     <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
                                       {item.name} (x{item.quantity})
+                                      <span style={{ color: '#FFD700', marginLeft: 8 }}>฿{parseFloat(item.price).toFixed(2)}</span>
                                     </Typography>
-                                    {item.selectedOptions && Object.entries(item.selectedOptions).map(([type, option]) => (
-                                      <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                                        - {type === 'temperature' ? 'อุณหภูมิ' :
-                                           type === 'sweetness' ? 'ความหวาน' :
-                                           type === 'toppings' ? 'ท็อปปิ้ง' :
-                                           type === 'size' ? 'ขนาด' : type}: {option.option_name}
-                                        {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                                    {item.selected_options && Object.entries(item.selected_options).map(([type, option]) => {
+                                      if (type === 'toppings') {
+                                        if (Array.isArray(option)) {
+                                          return option.map((topping, i) => (
+                                            <Typography key={type + i} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
+                                              • ท็อปปิ้ง: {topping.option_name}
+                                              {topping.price_adjustment > 0 && ` (+${topping.price_adjustment}฿)`}
+                                            </Typography>
+                                          ));
+                                        } else if (option && typeof option === 'object') {
+                                          return (
+                                            <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
+                                              • ท็อปปิ้ง: {option.option_name}
+                                              {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                                            </Typography>
+                                          );
+                                        }
+                                        return null;
+                                      }
+                                      return (
+                                        <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
+                                          • {type === 'temperature' ? 'อุณหภูมิ' :
+                                             type === 'sweetness' ? 'ความหวาน' :
+                                             type === 'size' ? 'ขนาด' : type}: {option.option_name}
+                                            {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                                        </Typography>
+                                      );
+                                    })}
+                                    {item.note && (
+                                      <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', ml: 1, mt: 0.5, fontStyle: 'italic' }}>
+                                        📝 {item.note}
                                       </Typography>
-                                    ))}
+                                    )}
                                   </Box>
-                                  <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                                    ฿{(parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)}
+                                  <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold', ml: 2, textAlign: 'right' }}>
+                                    ฿{(() => {
+                                      let itemPrice = 0;
+                                      if (item.totalPrice) {
+                                        itemPrice = parseFloat(item.totalPrice);
+                                      } else if (item.price) {
+                                        itemPrice = parseFloat(item.price);
+                                        if (item.selected_options) {
+                                          Object.values(item.selected_options).forEach(option => {
+                                            if (option.price_adjustment) {
+                                              itemPrice += parseFloat(option.price_adjustment);
+                                            }
+                                          });
+                                        }
+                                      }
+                                      return (itemPrice * parseFloat(item.quantity || 0)).toFixed(2);
+                                    })()}
                                   </Typography>
                                 </Box>
                               </ListItem>
@@ -590,7 +630,7 @@ const Staff = () => {
                             )}
                           </List>
                         </Box>
-                        <Typography variant="h6" component="p" sx={{ color: 'white', fontWeight: 600, textAlign: 'right', mt: 2 }}>
+                        <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600, textAlign: 'right', mt: 2 }}>
                           รวม: ฿{(parseFloat(order.total) || 0).toFixed(2)}
                         </Typography>
                       </CardContent>
@@ -688,11 +728,12 @@ const Staff = () => {
         <DialogContent dividers sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           {selectedOrder && (
             <Box>
-              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
+              {console.log('DEBUG selectedOrder:', selectedOrder)}
+              <Typography variant="body1" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
                 <PersonIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
                 **ชื่อลูกค้า:** {selectedOrder.customerName}
               </Typography>
-              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
+              <Typography variant="body1" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
                 <AccessTimeIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
                 **เวลาสั่ง:** {(function() {
                   let date = new Date(selectedOrder.orderTime.replace(' ', 'T'));
@@ -717,37 +758,72 @@ const Staff = () => {
 
               <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
-              <Typography variant="h6" sx={{ color: 'white', mb: 1.5 }}>
+              <Typography variant="h6" component="div" sx={{ color: 'white', mb: 1.5 }}>
                 รายการสินค้า:
               </Typography>
               <List dense disablePadding>
                 {(Array.isArray(selectedOrder.items) ? selectedOrder.items : []).map((item, index) => (
                   <ListItem key={index} sx={{ py: 0.5, px: 0, display: 'block' }}>
                     <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box>
+                      <Box sx={{ flex: 1 }}>
                         <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
                           {item.name} (x{item.quantity})
+                          <span style={{ color: '#FFD700', marginLeft: 8 }}>฿{parseFloat(item.price).toFixed(2)}</span>
                         </Typography>
-                        {item.selectedOptions && Object.entries(item.selectedOptions).map(([type, option]) => (
-                          <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                            - {type === 'temperature' ? 'อุณหภูมิ' :
-                               type === 'sweetness' ? 'ความหวาน' :
-                               type === 'toppings' ? 'ท็อปปิ้ง' :
-                               type === 'size' ? 'ขนาด' : type}: {option.option_name}
-                            {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                        
+                        {item.selected_options && Object.entries(item.selected_options).map(([type, option]) => {
+                          if (type === 'toppings') {
+                            if (Array.isArray(option)) {
+                              return option.map((topping, i) => (
+                                <Typography key={type + i} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
+                                  • ท็อปปิ้ง: {topping.option_name}
+                                  {topping.price_adjustment > 0 && ` (+${topping.price_adjustment}฿)`}
+                                </Typography>
+                              ));
+                            } else if (option && typeof option === 'object') {
+                              return (
+                                <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
+                                  • ท็อปปิ้ง: {option.option_name}
+                                  {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                                </Typography>
+                              );
+                            }
+                            return null;
+                          }
+                          return (
+                            <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
+                              • {type === 'temperature' ? 'อุณหภูมิ' :
+                                 type === 'sweetness' ? 'ความหวาน' :
+                                 type === 'size' ? 'ขนาด' : type}: {option.option_name}
+                                {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                            </Typography>
+                          );
+                        })}
+                        
+                        {item.note && (
+                          <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', ml: 1, mt: 0.5, fontStyle: 'italic' }}>
+                            📝 หมายเหตุ: {item.note}
                           </Typography>
-                        ))}
+                        )}
                       </Box>
-                      <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                        ฿{item.totalPrice ? (parseFloat(item.totalPrice) * parseFloat(item.quantity || 0)).toFixed(2) : (parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)}
+                      <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold', ml: 2, textAlign: 'right' }}>
+                        ฿{(() => {
+                          let itemPrice = 0;
+                          if (item.totalPrice) {
+                            itemPrice = parseFloat(item.totalPrice);
+                          } else if (item.price) {
+                            itemPrice = parseFloat(item.price);
+                            if (item.selected_options) {
+                              Object.values(item.selected_options).forEach(option => {
+                                if (option.price_adjustment) {
+                                  itemPrice += parseFloat(option.price_adjustment);
+                                }
+                              });
+                            }
+                          }
+                          return (itemPrice * parseFloat(item.quantity || 0)).toFixed(2);
+                        })()}
                       </Typography>
-                    </Box>
-                    <Box component="div" sx={{ ml: 2, mt: 0.5 }}>
-                      {item.note && (
-                        <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                          - หมายเหตุ: {item.note}
-                        </Typography>
-                      )}
                     </Box>
                   </ListItem>
                 ))}

@@ -74,7 +74,7 @@ const Navbar = () => {
             }}
             onClick={() => navigate('/')}
           >
-            MenuCoffee
+            คุณย่า Coffee
           </Typography>
         </Box>
 
