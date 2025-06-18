@@ -106,11 +106,12 @@ const Menu = () => {
   return (
     <Box
       sx={{
-        width: '100vw',
+        width: '100%',
         minHeight: '100vh',
         paddingTop: { xs: '64px', sm: '72px' },
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         position: 'relative',
+        overflowX: 'hidden',
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -126,15 +127,15 @@ const Menu = () => {
       <Container 
         maxWidth={false} 
         sx={{ 
-          py: { xs: 3, sm: 4, md: 6 },
-          px: { xs: 2, sm: 3, md: 4 },
+          py: { xs: 2, sm: 3, md: 4 },
+          px: { xs: 1, sm: 2, md: 3 },
           position: 'relative',
           zIndex: 1
         }}
       >
         <Box 
           sx={{ 
-            mb: { xs: 3, sm: 4, md: 6 },
+            mb: { xs: 2, sm: 3, md: 4 },
             textAlign: 'center'
           }}
         >
@@ -145,7 +146,7 @@ const Menu = () => {
             sx={{ 
               color: 'white',
               textAlign: 'center',
-              mb: 2,
+              mb: { xs: 1, sm: 2 },
               textShadow: '0 2px 4px rgba(0,0,0,0.3)',
               fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' }
             }}
@@ -157,7 +158,7 @@ const Menu = () => {
             sx={{ 
               color: 'rgba(255, 255, 255, 0.7)',
               textAlign: 'center',
-              mb: 4,
+              mb: { xs: 2, sm: 3, md: 4 },
               fontSize: { xs: '0.875rem', sm: '1rem' }
             }}
           >
@@ -171,7 +172,7 @@ const Menu = () => {
             value={searchTerm}
             onChange={handleSearchChange}
             sx={{
-              mb: 4,
+              mb: { xs: 2, sm: 3, md: 4 },
               '& .MuiOutlinedInput-root': {
                 '& fieldset': {
                   borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -185,9 +186,11 @@ const Menu = () => {
               },
               '& .MuiInputBase-input': {
                 color: 'white',
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               },
               '& .MuiInputLabel-root': {
                 color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: { xs: '0.875rem', sm: '1rem' }
               },
               '& .MuiInputLabel-root.Mui-focused': {
                 color: 'white',
@@ -200,13 +203,16 @@ const Menu = () => {
             onChange={handleCategoryChange}
             variant="scrollable"
             scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
-              mb: 4,
+              mb: { xs: 2, sm: 3, md: 4 },
               '& .MuiTabs-indicator': {
                 backgroundColor: 'white',
               },
               '& .MuiTab-root': {
                 color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minWidth: { xs: '80px', sm: 'auto' },
                 '&.Mui-selected': {
                   color: 'white',
                 },
@@ -226,6 +232,7 @@ const Menu = () => {
         <Grid 
           container 
           spacing={{ xs: 2, sm: 3, md: 4 }}
+          columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
           sx={{
             justifyContent: 'center'
           }}
@@ -233,10 +240,7 @@ const Menu = () => {
           {filteredCoffees.map((coffee) => (
             <Grid 
               item 
-              xs={12} 
-              sm={6} 
-              md={4} 
-              lg={3} 
+              xs={1}
               key={coffee.id}
               sx={{
                 display: 'flex',
@@ -246,7 +250,7 @@ const Menu = () => {
               <Card 
                 sx={{ 
                   width: '100%',
-                  maxWidth: 400,
+                  maxWidth: { xs: '100%', sm: 350, md: 400 },
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
@@ -256,6 +260,7 @@ const Menu = () => {
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
                   transition: 'all 0.3s ease-in-out',
+                  minHeight: { xs: '320px', sm: '350px' },
                   '&:hover': {
                     transform: 'translateY(-5px)',
                     boxShadow: '0 8px 40px rgba(0, 0, 0, 0.2)',
@@ -264,7 +269,7 @@ const Menu = () => {
               >
                 <CardMedia
                   component="img"
-                  height={isMobile ? "180" : "220"}
+                  height={{ xs: '160', sm: '180', md: '220' }}
                   image={coffee.image}
                   alt={coffee.name}
                   sx={{
@@ -276,7 +281,7 @@ const Menu = () => {
                 <CardContent 
                   sx={{ 
                     flexGrow: 1, 
-                    p: { xs: 2, sm: 3 },
+                    p: { xs: 1.5, sm: 2, md: 3 },
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 1
@@ -288,7 +293,7 @@ const Menu = () => {
                     sx={{ 
                       color: 'white',
                       fontWeight: 600,
-                      fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                      fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
                       lineHeight: 1.2
                     }}
                   >
@@ -298,7 +303,7 @@ const Menu = () => {
                     variant="body2" 
                     sx={{ 
                       color: 'rgba(255, 255, 255, 0.7)',
-                      fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                      fontSize: { xs: '0.8rem', sm: '0.875rem', md: '0.9375rem' },
                       lineHeight: 1.5,
                       flexGrow: 1
                     }}
@@ -318,7 +323,7 @@ const Menu = () => {
                       sx={{ 
                         color: 'white',
                         fontWeight: 600,
-                        fontSize: { xs: '1rem', sm: '1.125rem' }
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.125rem' }
                       }}
                     >
                       ฿{coffee.price}
@@ -327,7 +332,7 @@ const Menu = () => {
                       variant="body2" 
                       sx={{ 
                         color: 'rgba(255, 255, 255, 0.5)',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                        fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' }
                       }}
                     >
                       {categories.find(cat => cat.value === coffee.category)?.label || coffee.category}
@@ -336,8 +341,8 @@ const Menu = () => {
                 </CardContent>
                 <CardActions 
                   sx={{ 
-                    p: { xs: 1.5, sm: 2 },
-                    justifyContent: 'flex-end',
+                    p: { xs: 1, sm: 1.5, md: 2 },
+                    justifyContent: 'center',
                     gap: 1
                   }}
                 >
@@ -348,6 +353,8 @@ const Menu = () => {
                       sx={{
                         color: 'white',
                         background: 'rgba(255, 255, 255, 0.1)',
+                        minWidth: { xs: '40px', sm: '48px' },
+                        minHeight: { xs: '40px', sm: '48px' },
                         '&:hover': {
                           background: 'rgba(255, 255, 255, 0.2)',
                         }
@@ -363,6 +370,8 @@ const Menu = () => {
                       sx={{
                         color: 'white',
                         background: 'rgba(255, 255, 255, 0.1)',
+                        minWidth: { xs: '40px', sm: '48px' },
+                        minHeight: { xs: '40px', sm: '48px' },
                         '&:hover': {
                           background: 'rgba(255, 255, 255, 0.2)',
                         }
@@ -383,13 +392,15 @@ const Menu = () => {
             aria-label="add"
             sx={{
               position: 'fixed',
-              bottom: 16,
-              right: 16,
+              bottom: { xs: 16, sm: 24 },
+              right: { xs: 16, sm: 24 },
               background: 'linear-gradient(135deg, #FFD700 0%, #FFA000 100%)',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
               color: '#1a1a1a',
+              width: { xs: 56, sm: 64 },
+              height: { xs: 56, sm: 64 },
               '&:hover': {
                 background: 'linear-gradient(135deg, #FFA000 0%, #FFC107 100%)',
                 boxShadow: '0 10px 40px 0 rgba(31, 38, 135, 0.5)',
@@ -397,7 +408,7 @@ const Menu = () => {
             }}
             onClick={() => navigate('/add-coffee')}
           >
-            <AddIcon />
+            <AddIcon fontSize={isMobile ? "medium" : "large"} />
           </Fab>
         </Tooltip>
       </Container>
@@ -413,14 +424,16 @@ const Menu = () => {
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
             width: { xs: '90%', sm: '400px' },
-            maxWidth: '400px'
+            maxWidth: '400px',
+            m: { xs: 2, sm: 'auto' }
           }
         }}
       >
         <DialogTitle 
           sx={{ 
             color: 'white',
-            fontSize: { xs: '1.25rem', sm: '1.5rem' }
+            fontSize: { xs: '1.25rem', sm: '1.5rem' },
+            textAlign: 'center'
           }}
         >
           ยืนยันการลบ
@@ -429,7 +442,8 @@ const Menu = () => {
           <Typography 
             sx={{ 
               color: 'rgba(255, 255, 255, 0.7)',
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              fontSize: { xs: '0.875rem', sm: '1rem' },
+              textAlign: 'center'
             }}
           >
             คุณต้องการลบ {coffeeToDelete?.name} ใช่หรือไม่?
@@ -438,7 +452,8 @@ const Menu = () => {
         <DialogActions 
           sx={{ 
             p: { xs: 2, sm: 3 },
-            gap: 1
+            gap: 1,
+            justifyContent: 'center'
           }}
         >
           <Button 
@@ -446,10 +461,11 @@ const Menu = () => {
             sx={{
               color: 'white',
               background: 'rgba(255, 255, 255, 0.1)',
+              minWidth: { xs: '80px', sm: '100px' },
+              minHeight: { xs: '40px', sm: '36px' },
               '&:hover': {
                 background: 'rgba(255, 255, 255, 0.2)',
-              },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              }
             }}
           >
             ยกเลิก
@@ -458,11 +474,12 @@ const Menu = () => {
             onClick={handleDeleteConfirm}
             sx={{
               color: 'white',
-              background: 'linear-gradient(45deg, #FF4B2B 30%, #FF416C 90%)',
+              background: '#f44336',
+              minWidth: { xs: '80px', sm: '100px' },
+              minHeight: { xs: '40px', sm: '36px' },
               '&:hover': {
-                background: 'linear-gradient(45deg, #FF416C 30%, #FF4B2B 90%)',
-              },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+                background: '#d32f2f',
+              }
             }}
           >
             ลบ

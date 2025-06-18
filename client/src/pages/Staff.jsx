@@ -200,47 +200,58 @@ const Staff = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'รอดำเนินการ':
-        return '#FFC107';
-      case 'กำลังทำ':
-        return '#2196F3';
-      case 'เสร็จสิ้น':
-        return '#4CAF50';
-      case 'ยกเลิก':
-        return '#F44336';
+      case 'pending':
+        return '#ff9800';
+      case 'preparing':
+        return '#2196f3';
+      case 'completed':
+        return '#4caf50';
+      case 'cancelled':
+        return '#f44336';
       default:
-        return '#9E9E9E';
+        return '#757575';
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'รอดำเนินการ':
-        return <TimerIcon fontSize="small" />;
-      case 'กำลังทำ':
-        return <CoffeeIcon fontSize="small" />;
-      case 'เสร็จสิ้น':
-        return <CheckCircleIcon fontSize="small" />;
-      case 'ยกเลิก':
-        return <ErrorIcon fontSize="small" />;
+      case 'pending':
+        return <TimerIcon />;
+      case 'preparing':
+        return <CoffeeIcon />;
+      case 'completed':
+        return <CheckCircleIcon />;
+      case 'cancelled':
+        return <ErrorIcon />;
       default:
-        return null;
+        return <AccessTimeIcon />;
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'รอดำเนินการ';
+      case 'preparing':
+        return 'กำลังทำ';
+      case 'completed':
+        return 'เสร็จสิ้น';
+      case 'cancelled':
+        return 'ยกเลิก';
+      default:
+        return status;
     }
   };
 
   const formatTime = (dateString) => {
-    let date = new Date(dateString);
-
-    if (isNaN(date.getTime()) && typeof dateString === 'string') {
-      const isoString = dateString.replace(' ', 'T');
-      date = new Date(isoString);
-    }
-
-    if (isNaN(date.getTime())) {
-      return 'ไม่ทราบเวลา';
-    }
-
-    return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    const date = new Date(dateString);
+    return date.toLocaleString('th-TH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const handleViewDetails = (order) => {
@@ -256,95 +267,26 @@ const Staff = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
-    setSnackbar({
-      open: true,
-      message: 'ออกจากระบบสำเร็จ',
-      severity: 'info'
-    });
-  };
-
-  const groupOrdersByDate = (orders) => {
-    const groups = {};
-    orders.forEach(order => {
-      const date = new Date(order.orderTime.replace(' ', 'T'));
-      const dateKey = date.toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-      
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(order);
-    });
-    return groups;
-  };
-
-  const handleClearOldOrders = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        logout();
-        return;
-      }
-
-      const response = await fetch('http://localhost:5000/api/orders/clear-old', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.status === 401) {
-        logout();
-        return;
-      }
-
-      if (response.ok) {
-        setSnackbar({
-          open: true,
-          message: 'เคลียร์ออเดอร์ของวันก่อนหน้าสำเร็จ',
-          severity: 'success'
-        });
-        fetchOrders();
-      } else {
-        throw new Error('Failed to clear old orders');
-      }
-    } catch (error) {
-      console.error('Error clearing old orders:', error);
-      setSnackbar({
-        open: true,
-        message: 'ไม่สามารถเคลียร์ออเดอร์ของวันก่อนหน้าได้',
-        severity: 'error'
-      });
-    }
-    setClearConfirmOpen(false);
   };
 
   const filteredOrders = orders.filter(order => {
-    if (currentTab === 0) return true;
-    if (currentTab === 1) return order.status === 'รอดำเนินการ';
-    if (currentTab === 2) return order.status === 'กำลังทำ';
-    if (currentTab === 3) return order.status === 'เสร็จสิ้น';
-    if (currentTab === 4) return order.status === 'ยกเลิก';
+    if (currentTab === 0) return order.status === 'pending';
+    if (currentTab === 1) return order.status === 'preparing';
+    if (currentTab === 2) return order.status === 'completed';
+    if (currentTab === 3) return order.status === 'cancelled';
     return false;
-  }).sort((a, b) => {
-    const dateA = new Date(a.orderTime.replace(' ', 'T'));
-    const dateB = new Date(b.orderTime.replace(' ', 'T'));
-    return dateB - dateA;
-  });
-
-  const groupedOrders = groupOrdersByDate(filteredOrders);
+  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   return (
     <Box
       sx={{
-        width: '100vw',
+        width: '100%',
         minHeight: '100vh',
-        paddingTop: { xs: '56px', sm: '64px' },
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        py: { xs: 2, sm: 3, md: 4 },
+        px: { xs: 1, sm: 2, md: 3 },
         position: 'relative',
+        overflowX: 'hidden',
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -357,548 +299,449 @@ const Staff = () => {
         }
       }}
     >
-      <Container
-        maxWidth="xl"
-        sx={{
-          py: { xs: 3, sm: 4, md: 6 },
-          px: { xs: 2, sm: 3, md: 4 },
+      <Container 
+        maxWidth={false} 
+        sx={{ 
           position: 'relative',
-          zIndex: 1,
-          overflowX: 'hidden'
+          zIndex: 1
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: { xs: 2, sm: 3, md: 4 }
+        {/* Header */}
+        <Box 
+          sx={{ 
+            mb: { xs: 2, sm: 3, md: 4 },
+            textAlign: { xs: 'center', sm: 'left' }
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ mr: 2 }}>
-              จัดการคำสั่งซื้อ
+          <Typography 
+            variant="h4" 
+            component="h1" 
+            gutterBottom 
+            sx={{ 
+              color: 'white',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
+              mb: { xs: 1, sm: 2 }
+            }}
+          >
+            จัดการคำสั่งซื้อ
+          </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'center', sm: 'flex-start' },
+            gap: { xs: 1, sm: 2 },
+            justifyContent: { xs: 'center', sm: 'space-between' }
+          }}>
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: { xs: '0.875rem', sm: '1rem' }
+              }}
+            >
+              จำนวนคำสั่งซื้อทั้งหมด: {orders.length}
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<MenuBookIcon />}
-              onClick={() => navigate('/menu')}
-              sx={{
-                ml: 1,
-                background: 'linear-gradient(45deg, rgba(76, 175, 80, 0.7) 30%, rgba(139, 195, 74, 0.7) 90%)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
-                color: 'white',
-                fontWeight: 'bold',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, rgba(56, 142, 60, 0.8) 30%, rgba(104, 159, 56, 0.8) 90%)',
-                  boxShadow: '0 6px 8px rgba(0, 0, 0, 0.3)',
-                },
-                transition: 'all 0.3s ease-in-out',
-              }}
-            >
-              ไปที่เมนู
-            </Button>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<HistoryIcon />}
-              onClick={() => navigate('/order-history')}
-              sx={{
-                background: '#1a1a1a',
-                '&:hover': {
-                  background: '#333333',
-                },
-                color: 'white',
-              }}
-            >
-              ดูประวัติออเดอร์
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<RefreshIcon />}
-              onClick={() => setClearConfirmOpen(true)}
-              sx={{
-                background: 'linear-gradient(45deg, rgba(255, 152, 0, 0.7) 30%, rgba(255, 193, 7, 0.7) 90%)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
-                color: 'white',
-                fontWeight: 'bold',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, rgba(230, 81, 0, 0.8) 30%, rgba(255, 171, 0, 0.8) 90%)',
-                  boxShadow: '0 6px 8px rgba(0, 0, 0, 0.3)',
-                },
-                transition: 'all 0.3s ease-in-out',
-              }}
-            >
-              เคลียร์ออเดอร์เก่า
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<LogoutIcon />}
-              onClick={handleLogout}
-              sx={{
-                background: 'linear-gradient(45deg, rgba(244, 67, 54, 0.7) 30%, rgba(255, 87, 34, 0.7) 90%)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
-                color: 'white',
-                fontWeight: 'bold',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, rgba(211, 47, 47, 0.8) 30%, rgba(230, 74, 25, 0.8) 90%)',
-                  boxShadow: '0 6px 8px rgba(0, 0, 0, 0.3)',
-                },
-                transition: 'all 0.3s ease-in-out',
-              }}
-            >
-              ออกจากระบบ
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={fetchOrders}
+                sx={{
+                  color: 'white',
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  minHeight: { xs: '36px', sm: '40px' },
+                  '&:hover': {
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  }
+                }}
+              >
+                {!isMobile && 'รีเฟรช'}
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                sx={{
+                  color: 'white',
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  minHeight: { xs: '36px', sm: '40px' },
+                  '&:hover': {
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  }
+                }}
+              >
+                {!isMobile && 'ออกจากระบบ'}
+              </Button>
+            </Box>
           </Box>
         </Box>
 
-        <Tabs
-          value={currentTab}
-          onChange={handleTabChange}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="scrollable"
-          scrollButtons="auto"
+        {/* Tabs */}
+        <Paper
           sx={{
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            overflowX: 'auto',
             mb: { xs: 2, sm: 3, md: 4 },
-            '& .MuiTabs-indicator': { backgroundColor: 'white' },
-            '& .MuiTab-root': { color: 'rgba(255, 255, 255, 0.7)' },
-            '& .Mui-selected': { color: 'white !important' },
+            width: '100%'
           }}
         >
-          <Tab label="ทั้งหมด" />
-          <Tab label="รอดำเนินการ" />
-          <Tab label="กำลังทำ" />
-          <Tab label="เสร็จสิ้น" />
-          <Tab label="ยกเลิก" />
-        </Tabs>
-
-        {Object.keys(groupedOrders).length === 0 ? (
-          <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', mt: 4 }}>
-            ไม่มีคำสั่งซื้อในสถานะนี้
-          </Typography>
-        ) : (
-          Object.entries(groupedOrders).map(([date, orders]) => (
-            <Box key={date} sx={{ mb: 4 }}>
-              <Typography
-                variant="h5"
-                sx={{
+          <Tabs
+            value={currentTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              '& .MuiTab-root': {
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minWidth: { xs: '80px', sm: 'auto' },
+                '&.Mui-selected': {
                   color: 'white',
-                  mb: 2,
-                  pb: 1,
-                  borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
+                  fontWeight: 'bold'
+                },
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'white',
+              },
+            }}
+          >
+            <Tab label="รอดำเนินการ" />
+            <Tab label="กำลังทำ" />
+            <Tab label="เสร็จสิ้น" />
+            <Tab label="ยกเลิก" />
+          </Tabs>
+        </Paper>
+
+        {/* Orders Grid */}
+        <Grid 
+          container 
+          spacing={{ xs: 2, sm: 3, md: 4 }}
+          columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
+          sx={{
+            justifyContent: 'center'
+          }}
+        >
+          {filteredOrders.map((order) => (
+            <Grid 
+              item 
+              xs={1}
+              key={order.id}
+            >
+              <Card
+                sx={{
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+                  },
+                  height: '100%',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
+                  flexDirection: 'column',
+                  minHeight: { xs: '280px', sm: '320px' }
                 }}
               >
-                <AccessTimeIcon />
-                {date}
-              </Typography>
-              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                {orders.map((order) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={order.id}>
-                    <Card
+                <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2 } }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        color: 'white', 
+                        fontWeight: 'bold',
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        lineHeight: 1.2
+                      }}
+                    >
+                      #{order.id}
+                    </Typography>
+                    <Chip
+                      icon={getStatusIcon(order.status)}
+                      label={getStatusText(order.status)}
+                      size={isMobile ? "small" : "medium"}
                       sx={{
+                        backgroundColor: getStatusColor(order.status),
+                        color: 'white',
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        height: { xs: '24px', sm: '28px' }
+                      }}
+                    />
+                  </Box>
+                  
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      mb: 1
+                    }}
+                  >
+                    {order.customer_name}
+                  </Typography>
+                  
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                      mb: 1
+                    }}
+                  >
+                    {formatTime(order.created_at)}
+                  </Typography>
+                  
+                  <Box sx={{ mb: 1 }}>
+                    {order.items && order.items.slice(0, 2).map((item, index) => (
+                      <Typography 
+                        key={index} 
+                        variant="body2" 
+                        sx={{ 
+                          color: 'rgba(255,255,255,0.8)',
+                          fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                          lineHeight: 1.3
+                        }}
+                      >
+                        • {item.name} x{item.quantity}
+                      </Typography>
+                    ))}
+                    {order.items && order.items.length > 2 && (
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: 'rgba(255,255,255,0.6)',
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                        }}
+                      >
+                        และอีก {order.items.length - 2} รายการ
+                      </Typography>
+                    )}
+                  </Box>
+                  
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: '#FFD700', 
+                      fontWeight: 'bold',
+                      fontSize: { xs: '0.9rem', sm: '1rem' }
+                    }}
+                  >
+                    ฿{order.total_amount}
+                  </Typography>
+                </CardContent>
+                
+                <CardActions sx={{ 
+                  justifyContent: 'center', 
+                  p: { xs: 1, sm: 1.5 },
+                  gap: 1
+                }}>
+                  <Tooltip title="ดูรายละเอียด">
+                    <IconButton
+                      onClick={() => handleViewDetails(order)}
+                      sx={{
+                        color: 'white',
                         background: 'rgba(255, 255, 255, 0.1)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-                        transition: 'all 0.3s ease-in-out',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
+                        minWidth: { xs: '36px', sm: '40px' },
+                        minHeight: { xs: '36px', sm: '40px' },
                         '&:hover': {
-                          transform: 'translateY(-5px)',
-                          boxShadow: '0 8px 40px rgba(0, 0, 0, 0.2)',
+                          background: 'rgba(255, 255, 255, 0.2)',
                         }
                       }}
                     >
-                      <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                          <Typography variant="subtitle2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 500 }}>
-                            #{order.id}
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            {getStatusIcon(order.status)}
-                            <Chip
-                              label={order.status}
-                              size="small"
-                              sx={{
-                                backgroundColor: getStatusColor(order.status),
-                                color: 'white',
-                                fontWeight: 'bold',
-                              }}
-                            />
-                          </Box>
-                        </Box>
-                        <Divider sx={{ mb: 1.5, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <PersonIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1, fontSize: '1rem' }} />
-                          <Typography variant="body2" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontWeight: 500 }}>
-                            {order.customerName}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <AccessTimeIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1, fontSize: '1rem' }} />
-                          <Typography variant="body2" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                            {formatTime(order.orderTime)}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ mb: 1.5 }}>
-                          <Typography variant="body2" component="div" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 1, mb: 0.5 }}>
-                            รายการ ({Array.isArray(order.items) ? order.items.length : 0} รายการ):
-                          </Typography>
-                          <List dense disablePadding>
-                            {(Array.isArray(order.items) ? order.items : []).slice(0, 2).map((item, index) => (
-                              <ListItem key={index} sx={{ py: 0.5, px: 0, display: 'block' }}>
-                                <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <Box sx={{ flex: 1 }}>
-                                    <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                                      {item.name} (x{item.quantity})
-                                      <span style={{ color: '#FFD700', marginLeft: 8 }}>฿{parseFloat(item.price).toFixed(2)}</span>
-                                    </Typography>
-                                    {item.selected_options && Object.entries(item.selected_options).map(([type, option]) => {
-                                      if (type === 'toppings') {
-                                        if (Array.isArray(option)) {
-                                          return option.map((topping, i) => (
-                                            <Typography key={type + i} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
-                                              • ท็อปปิ้ง: {topping.option_name}
-                                              {topping.price_adjustment > 0 && ` (+${topping.price_adjustment}฿)`}
-                                            </Typography>
-                                          ));
-                                        } else if (option && typeof option === 'object') {
-                                          return (
-                                            <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
-                                              • ท็อปปิ้ง: {option.option_name}
-                                              {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
-                                            </Typography>
-                                          );
-                                        }
-                                        return null;
-                                      }
-                                      return (
-                                        <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
-                                          • {type === 'temperature' ? 'อุณหภูมิ' :
-                                             type === 'sweetness' ? 'ความหวาน' :
-                                             type === 'size' ? 'ขนาด' : type}: {option.option_name}
-                                            {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
-                                        </Typography>
-                                      );
-                                    })}
-                                    {item.note && (
-                                      <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', ml: 1, mt: 0.5, fontStyle: 'italic' }}>
-                                        📝 {item.note}
-                                      </Typography>
-                                    )}
-                                  </Box>
-                                  <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold', ml: 2, textAlign: 'right' }}>
-                                    ฿{(() => {
-                                      let itemPrice = 0;
-                                      if (item.totalPrice) {
-                                        itemPrice = parseFloat(item.totalPrice);
-                                      } else if (item.price) {
-                                        itemPrice = parseFloat(item.price);
-                                        if (item.selected_options) {
-                                          Object.values(item.selected_options).forEach(option => {
-                                            if (option.price_adjustment) {
-                                              itemPrice += parseFloat(option.price_adjustment);
-                                            }
-                                          });
-                                        }
-                                      }
-                                      return (itemPrice * parseFloat(item.quantity || 0)).toFixed(2);
-                                    })()}
-                                  </Typography>
-                                </Box>
-                              </ListItem>
-                            ))}
-                            {(Array.isArray(order.items) ? order.items.length : 0) > 2 && (
-                              <ListItem sx={{ py: 0.2, px: 0 }}>
-                                <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                                  และอื่นๆอีก {(Array.isArray(order.items) ? order.items.length : 0) - 2} รายการ
-                                </Typography>
-                              </ListItem>
-                            )}
-                          </List>
-                        </Box>
-                        <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600, textAlign: 'right', mt: 2 }}>
-                          รวม: ฿{(parseFloat(order.total) || 0).toFixed(2)}
-                        </Typography>
-                      </CardContent>
-                      <CardActions sx={{ justifyContent: 'flex-end', p: { xs: 1, sm: 2 }, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                        {order.status === 'รอดำเนินการ' && (
-                          <Button
-                            variant="contained"
-                            startIcon={<PlayArrowIcon />}
-                            onClick={() => handleStatusChange(order.id, 'กำลังทำ')}
-                            sx={{
-                              backgroundColor: '#2196F3',
-                              '&:hover': {
-                                backgroundColor: '#1976D2',
-                              },
-                              color: 'white',
-                              fontSize: isMobile ? '0.7rem' : '0.8rem',
-                              padding: isMobile ? '4px 8px' : '6px 12px',
-                            }}
-                          >
-                            เริ่มทำ
-                          </Button>
-                        )}
-                        {order.status === 'กำลังทำ' && (
-                          <Button
-                            variant="contained"
-                            startIcon={<DoneIcon />}
-                            onClick={() => handleStatusChange(order.id, 'เสร็จสิ้น')}
-                            sx={{
-                              backgroundColor: '#4CAF50',
-                              '&:hover': {
-                                backgroundColor: '#388E3C',
-                              },
-                              color: 'white',
-                              fontSize: isMobile ? '0.7rem' : '0.8rem',
-                              padding: isMobile ? '4px 8px' : '6px 12px',
-                            }}
-                          >
-                            ทำเสร็จ
-                          </Button>
-                        )}
-                        {(order.status === 'รอดำเนินการ' || order.status === 'กำลังทำ') && (
-                          <Button
-                            variant="contained"
-                            startIcon={<CancelIcon />}
-                            onClick={() => handleStatusChange(order.id, 'ยกเลิก')}
-                            sx={{
-                              backgroundColor: '#F44336',
-                              '&:hover': {
-                                backgroundColor: '#D32F2F',
-                              },
-                              color: 'white',
-                              fontSize: isMobile ? '0.7rem' : '0.8rem',
-                              padding: isMobile ? '4px 8px' : '6px 12px',
-                            }}
-                          >
-                            ยกเลิก
-                          </Button>
-                        )}
-                        <Tooltip title="ดูรายละเอียด" arrow>
-                          <IconButton
-                            aria-label="view details"
-                            onClick={() => handleViewDetails(order)}
-                            sx={{
-                              color: '#90CAF9',
-                              '&:hover': {
-                                backgroundColor: 'rgba(144, 202, 249, 0.1)',
-                              }
-                            }}
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </CardActions>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          ))
+                      <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
+                    </IconButton>
+                  </Tooltip>
+                  
+                  {order.status === 'pending' && (
+                    <>
+                      <Tooltip title="เริ่มทำ">
+                        <IconButton
+                          onClick={() => handleStatusChange(order.id, 'preparing')}
+                          sx={{
+                            color: 'white',
+                            background: '#4CAF50',
+                            minWidth: { xs: '36px', sm: '40px' },
+                            minHeight: { xs: '36px', sm: '40px' },
+                            '&:hover': {
+                              background: '#388E3C',
+                            }
+                          }}
+                        >
+                          <PlayArrowIcon fontSize={isMobile ? "small" : "medium"} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="ยกเลิก">
+                        <IconButton
+                          onClick={() => handleStatusChange(order.id, 'cancelled')}
+                          sx={{
+                            color: 'white',
+                            background: '#f44336',
+                            minWidth: { xs: '36px', sm: '40px' },
+                            minHeight: { xs: '36px', sm: '40px' },
+                            '&:hover': {
+                              background: '#d32f2f',
+                            }
+                          }}
+                        >
+                          <CancelIcon fontSize={isMobile ? "small" : "medium"} />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  )}
+                  
+                  {order.status === 'preparing' && (
+                    <Tooltip title="เสร็จสิ้น">
+                      <IconButton
+                        onClick={() => handleStatusChange(order.id, 'completed')}
+                        sx={{
+                          color: 'white',
+                          background: '#4CAF50',
+                          minWidth: { xs: '36px', sm: '40px' },
+                          minHeight: { xs: '36px', sm: '40px' },
+                          '&:hover': {
+                            background: '#388E3C',
+                          }
+                        }}
+                      >
+                        <CheckCircleIcon fontSize={isMobile ? "small" : "medium"} />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {filteredOrders.length === 0 && (
+          <Box sx={{ 
+            textAlign: 'center', 
+            py: { xs: 4, sm: 6, md: 8 },
+            color: 'rgba(255,255,255,0.7)'
+          }}>
+            <Typography variant="h6" sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+              ไม่มีคำสั่งซื้อในสถานะนี้
+            </Typography>
+            <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              คำสั่งซื้อใหม่จะปรากฏที่นี่
+            </Typography>
+          </Box>
         )}
-      </Container>
 
-      {/* Order Details Dialog */}
-      <Dialog
-        open={orderDetailsOpen}
-        onClose={handleCloseDetails}
-        aria-labelledby="order-details-title"
-        maxWidth="sm"
-        fullWidth
-        sx={{ '& .MuiPaper-root': { background: '#1e1e1e', color: 'white' } }}
-      >
-        <DialogTitle id="order-details-title" sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 2 }}>
-          รายละเอียดคำสั่งซื้อ #{selectedOrder?.id}
-        </DialogTitle>
-        <DialogContent dividers sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          {selectedOrder && (
-            <Box>
-              {console.log('DEBUG selectedOrder:', selectedOrder)}
-              <Typography variant="body1" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
-                <PersonIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
-                **ชื่อลูกค้า:** {selectedOrder.customerName}
-              </Typography>
-              <Typography variant="body1" component="div" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
-                <AccessTimeIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
-                **เวลาสั่ง:** {(function() {
-                  let date = new Date(selectedOrder.orderTime.replace(' ', 'T'));
-                  if (isNaN(date.getTime()) && typeof selectedOrder.orderTime === 'string') {
-                    const isoString = selectedOrder.orderTime.replace(' ', 'T');
-                    date = new Date(isoString);
-                  }
-                  return isNaN(date.getTime()) ? 'ไม่ทราบเวลา' : date.toLocaleString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                })()}
-              </Typography>
-              <Box sx={{ mb: 2, mt: 1 }}>
-                <Chip
-                  label={selectedOrder.status}
-                  size="small"
-                  sx={{
-                    backgroundColor: getStatusColor(selectedOrder.status),
-                    color: 'white',
-                    fontWeight: 'bold',
-                  }}
-                />
-              </Box>
-
-              <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-
-              <Typography variant="h6" component="div" sx={{ color: 'white', mb: 1.5 }}>
-                รายการสินค้า:
-              </Typography>
-              <List dense disablePadding>
-                {(Array.isArray(selectedOrder.items) ? selectedOrder.items : []).map((item, index) => (
-                  <ListItem key={index} sx={{ py: 0.5, px: 0, display: 'block' }}>
-                    <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                          {item.name} (x{item.quantity})
-                          <span style={{ color: '#FFD700', marginLeft: 8 }}>฿{parseFloat(item.price).toFixed(2)}</span>
-                        </Typography>
-                        
-                        {item.selected_options && Object.entries(item.selected_options).map(([type, option]) => {
-                          if (type === 'toppings') {
-                            if (Array.isArray(option)) {
-                              return option.map((topping, i) => (
-                                <Typography key={type + i} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
-                                  • ท็อปปิ้ง: {topping.option_name}
-                                  {topping.price_adjustment > 0 && ` (+${topping.price_adjustment}฿)`}
-                                </Typography>
-                              ));
-                            } else if (option && typeof option === 'object') {
-                              return (
-                                <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
-                                  • ท็อปปิ้ง: {option.option_name}
-                                  {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
-                                </Typography>
-                              );
-                            }
-                            return null;
-                          }
-                          return (
-                            <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }}>
-                              • {type === 'temperature' ? 'อุณหภูมิ' :
-                                 type === 'sweetness' ? 'ความหวาน' :
-                                 type === 'size' ? 'ขนาด' : type}: {option.option_name}
-                                {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
-                            </Typography>
-                          );
-                        })}
-                        
-                        {item.note && (
-                          <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', ml: 1, mt: 0.5, fontStyle: 'italic' }}>
-                            📝 หมายเหตุ: {item.note}
-                          </Typography>
-                        )}
-                      </Box>
-                      <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold', ml: 2, textAlign: 'right' }}>
-                        ฿{(() => {
-                          let itemPrice = 0;
-                          if (item.totalPrice) {
-                            itemPrice = parseFloat(item.totalPrice);
-                          } else if (item.price) {
-                            itemPrice = parseFloat(item.price);
-                            if (item.selected_options) {
-                              Object.values(item.selected_options).forEach(option => {
-                                if (option.price_adjustment) {
-                                  itemPrice += parseFloat(option.price_adjustment);
-                                }
-                              });
-                            }
-                          }
-                          return (itemPrice * parseFloat(item.quantity || 0)).toFixed(2);
-                        })()}
-                      </Typography>
-                    </Box>
-                  </ListItem>
-                ))}
-              </List>
-
-              <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-
-              <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold', textAlign: 'right' }}>
-                ยอดรวมทั้งหมด: ฿{(parseFloat(selectedOrder.total) || 0).toFixed(2)}
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', pt: 2 }}>
-          <Button onClick={handleCloseDetails} sx={{ color: '#90CAF9' }}>ปิด</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Clear Orders Confirmation Dialog */}
-      <Dialog
-        open={clearConfirmOpen}
-        onClose={() => setClearConfirmOpen(false)}
-        PaperProps={{
-          sx: {
-            background: 'rgba(45,45,45,0.95)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '16px',
-            color: 'white',
-          }
-        }}
-      >
-        <DialogTitle sx={{ color: 'white', fontWeight: 'bold' }}>
-          ยืนยันการเคลียร์ออเดอร์
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ color: 'rgba(255,255,255,0.7)' }}>
-            คุณต้องการเคลียร์ออเดอร์ของวันก่อนหน้าหรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setClearConfirmOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
-            ยกเลิก
-          </Button>
-          <Button
-            onClick={handleClearOldOrders}
-            variant="contained"
-            sx={{
-              background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
-              color: '#1a1a1a',
-              fontWeight: 600,
-              '&:hover': {
-                background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
-              }
-            }}
-          >
-            ยืนยัน
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
+        {/* Order Details Dialog */}
+        <Dialog
+          open={orderDetailsOpen}
+          onClose={handleCloseDetails}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              width: { xs: '95%', sm: '80%', md: '70%' }
+            }
+          }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+          {selectedOrder && (
+            <>
+              <DialogTitle sx={{ color: 'white', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                รายละเอียดคำสั่งซื้อ #{selectedOrder.id}
+              </DialogTitle>
+              <DialogContent>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                    ข้อมูลลูกค้า
+                  </Typography>
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    ชื่อ: {selectedOrder.customer_name}
+                  </Typography>
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    เวลา: {formatTime(selectedOrder.created_at)}
+                  </Typography>
+                </Box>
+                
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                    รายการสินค้า
+                  </Typography>
+                  {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                    <Box key={index} sx={{ mb: 1, p: 1, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
+                      <Typography sx={{ color: 'white', fontWeight: 'bold' }}>
+                        {item.name} x{item.quantity}
+                      </Typography>
+                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                        ฿{item.price} ต่อชิ้น
+                      </Typography>
+                      {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                          ตัวเลือก: {Object.values(item.selectedOptions).map(option => option.name).join(', ')}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+                
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6" sx={{ color: 'white' }}>
+                    รวมทั้งหมด:
+                  </Typography>
+                  <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+                    ฿{selectedOrder.total_amount}
+                  </Typography>
+                </Box>
+              </DialogContent>
+              <DialogActions sx={{ p: { xs: 2, sm: 3 } }}>
+                <Button 
+                  onClick={handleCloseDetails}
+                  sx={{
+                    color: 'white',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    minWidth: { xs: '80px', sm: '100px' },
+                    minHeight: { xs: '40px', sm: '36px' },
+                    '&:hover': {
+                      background: 'rgba(255, 255, 255, 0.2)',
+                    }
+                  }}
+                >
+                  ปิด
+                </Button>
+              </DialogActions>
+            </>
+          )}
+        </Dialog>
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Container>
     </Box>
   );
 };

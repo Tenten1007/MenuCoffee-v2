@@ -48,7 +48,8 @@ import {
   Delete as DeleteIcon,
   ShoppingCart as CartIcon,
   Person as PersonIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -305,13 +306,12 @@ const Home = () => {
         sx={{
           minHeight: '100vh',
           width: '100vw',
-          paddingTop: { xs: `${NAVBAR_HEIGHT + 8}px`, sm: `${NAVBAR_HEIGHT + 16}px` },
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
           position: 'relative',
           overflowX: 'hidden',
-          py: 0,
-          pt: 4,
-          px: { xs: 2, sm: 3, md: 4 },
+          pt: { xs: `${NAVBAR_HEIGHT + 2}vh`, sm: `${NAVBAR_HEIGHT + 3}vh` },
+          pb: { xs: '2vh', sm: '4vh' },
+          px: { xs: '2vw', sm: '4vw', md: '6vw' },
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -330,16 +330,18 @@ const Home = () => {
           sx={{ 
             position: 'relative',
             zIndex: 1,
-            flexGrow: 1,
-            width: '100%'
+            width: '100%',
+            maxWidth: '100vw'
           }}
         >
+          {/* Header Section */}
           <Box 
             sx={{ 
               display: 'flex',
-              justifyContent: 'space-between',
+              flexDirection: 'column',
               alignItems: 'center',
-              mb: 4,
+              mb: { xs: '3vh', sm: '4vh' },
+              gap: { xs: '2vh', sm: '3vh' },
               width: '100%'
             }}
           >
@@ -349,56 +351,95 @@ const Home = () => {
               sx={{ 
                 color: 'white',
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' }
+                fontSize: { xs: 'clamp(1.5rem, 5vw, 2.5rem)', sm: 'clamp(1.75rem, 4vw, 2.5rem)' },
+                textAlign: 'center',
+                fontWeight: 'bold',
+                mb: { xs: '1vh', sm: '2vh' }
               }}
             >
               Coffee Menu
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            
+            {/* Search and Staff Button */}
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              alignItems: 'center', 
+              gap: { xs: '2vh', sm: '3vh' },
+              width: '100%',
+              maxWidth: { xs: '90vw', sm: '60vw', md: '50vw' }
+            }}>
               <TextField
                 label="ค้นหาเมนู"
                 variant="outlined"
                 size="small"
+                fullWidth
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{
+                  width: '100%',
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
+                    height: { xs: '6vh', sm: '5vh' },
+                    '& fieldset': { 
+                      borderColor: 'rgba(255,255,255,0.3)',
+                      borderRadius: '12px'
+                    },
+                    '&:hover fieldset': { 
+                      borderColor: 'rgba(255,255,255,0.5)' 
+                    },
+                    '&.Mui-focused fieldset': { 
+                      borderColor: 'white' 
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: 'white',
+                    fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'rgba(255,255,255,0.7)',
+                    fontSize: { xs: 'clamp(0.8rem, 2.5vw, 1rem)', sm: 'clamp(0.9rem, 2vw, 1rem)' }
+                  }
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                      <SearchIcon sx={{ 
+                        color: 'rgba(255,255,255,0.7)',
+                        fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' }
+                      }} />
                     </InputAdornment>
                   ),
-                  sx: {
-                    color: 'white',
-                    '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                    '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                    '&.Mui-focused fieldset': { borderColor: 'white' },
-                  }
-                }}
-                InputLabelProps={{
-                  sx: { color: 'rgba(255,255,255,0.7)' }
                 }}
               />
-              <Grid item>
-                <Button
-                  variant="contained"
-                  startIcon={<PersonIcon />}
-                  onClick={isLoggedIn ? () => navigate('/staff') : () => setStaffLoginOpen(true)}
-                  sx={{
-                    background: isLoggedIn ? '#4caf50' : '#1a1a1a',
-                    '&:hover': {
-                      background: isLoggedIn ? '#388e3c' : '#333333',
-                    },
-                    color: 'white',
-                    transition: 'background-color 0.3s ease',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                  }}
-                >
-                  {isLoggedIn ? 'Staff Dashboard' : 'Staff Login'}
-                </Button>
-              </Grid>
+              
+              <Button
+                variant="contained"
+                startIcon={<PersonIcon />}
+                onClick={isLoggedIn ? () => navigate('/staff') : () => setStaffLoginOpen(true)}
+                sx={{
+                  background: isLoggedIn ? '#4caf50' : '#1a1a1a',
+                  '&:hover': {
+                    background: isLoggedIn ? '#388e3c' : '#333333',
+                  },
+                  color: 'white',
+                  transition: 'background-color 0.3s ease',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                  width: '100%',
+                  maxWidth: { xs: '90vw', sm: '20vw' },
+                  minHeight: { xs: '6vh', sm: '5vh' },
+                  borderRadius: '12px',
+                  fontSize: { xs: 'clamp(0.8rem, 3vw, 1rem)', sm: 'clamp(0.9rem, 2vw, 1rem)' },
+                  fontWeight: 'bold'
+                }}
+              >
+                {isLoggedIn ? 'Staff Dashboard' : 'Staff Login'}
+              </Button>
             </Box>
           </Box>
 
+          {/* Category Tabs */}
           <Paper
             sx={{
               background: 'rgba(255,255,255,0.1)',
@@ -406,8 +447,9 @@ const Home = () => {
               borderRadius: '16px',
               border: '1px solid rgba(255,255,255,0.1)',
               overflowX: 'auto',
-              mb: 4,
-              width: '100%'
+              mb: { xs: '3vh', sm: '4vh' },
+              width: '100%',
+              mx: 'auto'
             }}
           >
             <Tabs
@@ -419,6 +461,9 @@ const Home = () => {
               sx={{
                 '& .MuiTab-root': {
                   color: 'rgba(255,255,255,0.7)',
+                  fontSize: { xs: 'clamp(0.7rem, 2.5vw, 0.9rem)', sm: 'clamp(0.8rem, 2vw, 0.9rem)' },
+                  minWidth: { xs: '20vw', sm: '15vw' },
+                  padding: { xs: '2vh 1vw', sm: '2.5vh 2vw' },
                   '&.Mui-selected': {
                     color: 'white',
                     fontWeight: 'bold'
@@ -426,6 +471,7 @@ const Home = () => {
                 },
                 '& .MuiTabs-indicator': {
                   backgroundColor: 'white',
+                  height: '3px'
                 },
               }}
             >
@@ -435,28 +481,39 @@ const Home = () => {
             </Tabs>
           </Paper>
 
+          {/* Coffee Grid */}
           <Grid 
             container 
-            spacing={4}
-            columns={{ xs: 4, sm: 8, md: 12 }}
+            spacing={{ xs: '2vw', sm: '3vw', md: '4vw' }}
             sx={{
               justifyContent: 'center',
-              width: '100%'
+              width: '100%',
+              maxWidth: '100vw'
             }}
           >
             {filteredCoffees.map((coffee) => (
               <Grid 
                 item 
-                xs={12} 
-                sm={6} 
-                md={4} 
-                lg={3} 
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
                 key={coffee.id}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center'
+                }}
               >
                 <Card
                   sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%',
+                    maxWidth: { xs: '90vw', sm: '40vw', md: '30vw', lg: '25vw' },
+                    height: { xs: '46vh', sm: '50vh' },
+                    minHeight: { xs: '46vh', sm: '50vh' },
+                    maxHeight: { xs: '46vh', sm: '50vh' },
                     background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
                     borderRadius: '16px',
                     border: '1px solid rgba(255,255,255,0.1)',
                     transition: 'transform 0.2s, box-shadow 0.2s',
@@ -464,202 +521,460 @@ const Home = () => {
                       transform: 'translateY(-5px)',
                       boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
                     },
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
                   }}
                 >
                   <CardMedia
                     component="img"
-                    height="140"
                     image={coffee.image}
                     alt={coffee.name}
                     sx={{
+                      height: { xs: '20vh', sm: '22vh', md: '24vh' },
+                      objectFit: 'cover',
                       borderTopLeftRadius: '16px',
                       borderTopRightRadius: '16px',
+                      width: '100%'
                     }}
                   />
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography 
-                      gutterBottom 
-                      variant="h5" 
-                      component="div" 
-                      sx={{ color: 'white', fontWeight: 'bold' }}
-                    >
-                      {coffee.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                      {coffee.description}
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 2, color: '#FFD700', fontWeight: 'bold' }}>
-                      ฿{coffee.price}
-                    </Typography>
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-                    <Button 
-                      variant="contained" 
-                      startIcon={<AddIcon />} 
-                      onClick={() => handleAddToCart(coffee)}
+                  <CardContent
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      p: { xs: '2vw', sm: '2.5vw' },
+                      width: '100%'
+                    }}
+                  >
+                    <Box sx={{ flex: 1, minHeight: { xs: '10vh', sm: '12vh' }, display: 'flex', flexDirection: 'column' }}>
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: { xs: 'clamp(1rem, 3.5vw, 1.3rem)', sm: 'clamp(1.1rem, 2.5vw, 1.3rem)' },
+                          lineHeight: 1.2,
+                          mb: '1vh',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          minHeight: { xs: '3vh', sm: '3.5vh' }
+                        }}
+                      >
+                        {coffee.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'rgba(255,255,255,0.7)',
+                          fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
+                          lineHeight: 1.4,
+                          mb: '2vh',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          minHeight: { xs: '4vh', sm: '4.5vh' }
+                        }}
+                      >
+                        {coffee.description}
+                      </Typography>
+                    </Box>
+                    <Box
                       sx={{
-                        background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
-                        color: '#1a1a1a',
-                        fontWeight: 600,
-                        '&:hover': {
-                          background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
-                        }
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-end',
+                        mt: 'auto',
+                        pt: 1
                       }}
                     >
-                      Add to Cart
-                    </Button>
-                  </CardActions>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: '#FFD700',
+                          fontWeight: 'bold',
+                          fontSize: { xs: 'clamp(1rem, 3.5vw, 1.3rem)', sm: 'clamp(1.1rem, 2.5vw, 1.3rem)' }
+                        }}
+                      >
+                        ฿{coffee.price}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleAddToCart(coffee)}
+                        sx={{
+                          background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
+                          color: '#1a1a1a',
+                          fontWeight: 600,
+                          fontSize: { xs: 'clamp(0.7rem, 2.5vw, 0.9rem)', sm: 'clamp(0.8rem, 2vw, 0.9rem)' },
+                          minHeight: { xs: '5vh', sm: '4.5vh' },
+                          borderRadius: '12px',
+                          px: { xs: '2vw', sm: '3vw' },
+                          '&:hover': {
+                            background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
+                          }
+                        }}
+                      >
+                        เพิ่ม
+                      </Button>
+                    </Box>
+                  </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
+
+          {/* Empty State */}
+          {filteredCoffees.length === 0 && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              py: { xs: '8vh', sm: '10vh', md: '12vh' },
+              color: 'rgba(255,255,255,0.7)'
+            }}>
+              <Typography variant="h6" sx={{ 
+                mb: '2vh', 
+                fontSize: { xs: 'clamp(1rem, 4vw, 1.3rem)', sm: 'clamp(1.1rem, 3vw, 1.3rem)' },
+                color: 'white'
+              }}>
+                ไม่พบเมนูที่ค้นหา
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+              }}>
+                ลองเปลี่ยนคำค้นหาหรือหมวดหมู่
+              </Typography>
+            </Box>
+          )}
         </Container>
 
+        {/* Cart Drawer */}
         <Drawer
           anchor="right"
           open={cartOpen}
           onClose={() => setCartOpen(false)}
           PaperProps={{
             sx: {
-              width: isMobile ? '100%' : 400,
+              width: { xs: '100vw', sm: '40vw' },
               background: 'rgba(45,45,45,0.95)',
               backdropFilter: 'blur(10px)',
               borderLeft: '1px solid rgba(255,255,255,0.1)',
             }
           }}
         >
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom sx={{ color: 'white', fontWeight: 'bold' }}>
-              ตะกร้าสินค้า
-            </Typography>
-            <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.1)' }} />
-            {cart.length === 0 ? (
-              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                ตะกร้าว่างเปล่า
+          <Box sx={{ 
+            p: { xs: '3vw', sm: '4vw' },
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Header with Close Button */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              mb: '2vh'
+            }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  color: 'white', 
+                  fontWeight: 'bold',
+                  fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' }
+                }}
+              >
+                ตะกร้าสินค้า
               </Typography>
-            ) : (
-              <List>
-                {cart.map((item, index) => (
-                  <ListItem key={index} sx={{ py: 1, px: 0 }}>
-                    <ListItemText
-                      primary={
-                        <Typography sx={{ color: 'white' }}>
-                          {item.name} x {item.quantity}
-                        </Typography>
-                      }
-                      secondary={
-                        <Box>
-                          {Object.entries(item.selectedOptions || {}).map(([type, option]) => (
-                            <Typography key={type} variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', display: 'block' }}>
-                              {type === 'temperature' ? 'อุณหภูมิ' :
-                               type === 'sweetness' ? 'ความหวาน' :
-                               type === 'toppings' ? 'ท็อปปิ้ง' :
-                               type === 'size' ? 'ขนาด' : type}: {option.option_name}
-                              {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
-                            </Typography>
-                          ))}
-                          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                            ฿{(item.totalPrice || item.price) * item.quantity}
+              <IconButton 
+                onClick={() => setCartOpen(false)}
+                sx={{ 
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: { xs: 'clamp(1.5rem, 6vw, 2rem)', sm: 'clamp(1.8rem, 4vw, 2rem)' },
+                  width: { xs: 'clamp(3rem, 12vw, 4rem)', sm: 'clamp(3.5rem, 8vw, 4rem)' },
+                  height: { xs: 'clamp(3rem, 12vw, 4rem)', sm: 'clamp(3.5rem, 8vw, 4rem)' },
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    color: 'white'
+                  }
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Divider sx={{ mb: '2vh', borderColor: 'rgba(255,255,255,0.1)' }} />
+            
+            {/* Content Area */}
+            <Box sx={{ flex: 1, overflow: 'hidden' }}>
+              {cart.length === 0 ? (
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  py: { xs: '8vh', sm: '10vh' },
+                  color: 'rgba(255,255,255,0.7)'
+                }}>
+                  <CartIcon sx={{ 
+                    fontSize: { xs: 'clamp(3rem, 15vw, 4rem)', sm: 'clamp(3.5rem, 10vw, 4rem)' }, 
+                    mb: '2vh', 
+                    opacity: 0.5 
+                  }} />
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      mb: '1vh',
+                      fontSize: { xs: 'clamp(1rem, 4vw, 1.3rem)', sm: 'clamp(1.1rem, 3vw, 1.3rem)' }
+                    }}
+                  >
+                    ตะกร้าว่างเปล่า
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                    }}
+                  >
+                    เพิ่มเมนูเพื่อเริ่มสั่งซื้อ
+                  </Typography>
+                </Box>
+              ) : (
+                <List sx={{ 
+                  maxHeight: { xs: '45vh', sm: '55vh' }, 
+                  overflow: 'auto',
+                  mb: '2vh'
+                }}>
+                  {cart.map((item, index) => (
+                    <ListItem key={index} sx={{ 
+                      py: { xs: '2vh', sm: '2.5vh' }, 
+                      px: 0,
+                      borderBottom: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                      <ListItemText
+                        primary={
+                          <Typography sx={{ 
+                            color: 'white',
+                            fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
+                            fontWeight: 'bold',
+                            mb: '0.5vh'
+                          }}>
+                            {item.name}
                           </Typography>
-                        </Box>
-                      }
-                    />
-                    <ListItemSecondaryAction>
-                      <IconButton 
-                        edge="end" 
-                        aria-label="delete" 
-                        onClick={() => handleRemoveFromCart(index)}
-                        sx={{ color: '#ef5350' }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))}
-                <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.1)' }} />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography sx={{ 
+                              color: '#FFD700',
+                              fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
+                              fontWeight: 'bold'
+                            }}>
+                              ฿{item.totalPrice} x {item.quantity}
+                            </Typography>
+                            {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                              <Typography sx={{ 
+                                color: 'rgba(255,255,255,0.6)',
+                                fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
+                                mt: '0.5vh'
+                              }}>
+                                {Object.values(item.selectedOptions).map(option => option.name).join(', ')}
+                              </Typography>
+                            )}
+                          </Box>
+                        }
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleRemoveFromCart(index)}
+                          sx={{ 
+                            color: '#ff6b6b',
+                            fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+                            width: { xs: 'clamp(2.5rem, 8vw, 3rem)', sm: 'clamp(2.8rem, 6vw, 3rem)' },
+                            height: { xs: 'clamp(2.5rem, 8vw, 3rem)', sm: 'clamp(2.8rem, 6vw, 3rem)' },
+                            '&:hover': {
+                              backgroundColor: 'rgba(255,107,107,0.1)'
+                            }
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </Box>
+            
+            {/* Footer with Total and Buttons */}
+            {cart.length > 0 && (
+              <Box sx={{ 
+                mt: 'auto',
+                pt: '2vh',
+                borderTop: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  mb: '2vh'
+                }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: 'white',
+                      fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' }
+                    }}
+                  >
                     รวมทั้งหมด:
                   </Typography>
-                  <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: '#FFD700', 
+                      fontWeight: 'bold',
+                      fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' }
+                    }}
+                  >
                     ฿{calculateTotal()}
                   </Typography>
                 </Box>
-                <TextField
-                  label="ชื่อลูกค้า"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                      '&.Mui-focused fieldset': { borderColor: 'white' },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'rgba(255,255,255,0.7)',
-                    },
-                  }}
-                />
                 <Button
                   variant="contained"
                   fullWidth
-                  onClick={handleSubmitOrder}
-                  startIcon={<CartIcon />}
+                  onClick={() => setOrderDialogOpen(true)}
                   sx={{
-                    mt: 2,
-                    background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
-                    color: '#1a1a1a',
+                    background: 'linear-gradient(45deg, #4CAF50 30%, #45a049 90%)',
+                    color: 'white',
                     fontWeight: 600,
+                    minHeight: { xs: '6vh', sm: '5vh' },
+                    borderRadius: '12px',
+                    fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
+                    mb: '2vh',
                     '&:hover': {
-                      background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
+                      background: 'linear-gradient(45deg, #45a049 30%, #4CAF50 90%)',
                     }
                   }}
                 >
-                  ยืนยันการสั่งซื้อ
+                  สั่งซื้อ
                 </Button>
-              </List>
+              </Box>
             )}
+            
+            {/* Mobile Close Button at Bottom */}
+            <Box sx={{ 
+              display: { xs: 'flex', sm: 'none' },
+              justifyContent: 'center',
+              mt: '2vh'
+            }}>
+              <Button
+                variant="outlined"
+                onClick={() => setCartOpen(false)}
+                sx={{
+                  color: 'rgba(255,255,255,0.7)',
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)' },
+                  minHeight: { xs: '5vh' },
+                  borderRadius: '12px',
+                  '&:hover': {
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    color: 'white'
+                  }
+                }}
+              >
+                ปิด
+              </Button>
+            </Box>
           </Box>
         </Drawer>
 
+        {/* Order Dialog */}
         <Dialog
           open={orderDialogOpen}
           onClose={() => setOrderDialogOpen(false)}
           maxWidth="sm"
           fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '16px',
+              background: 'rgba(45,45,45,0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'white',
+              m: { xs: '2vw', sm: 0 },
+              maxWidth: { xs: '95vw', sm: '80vw', md: '60vw' }
+            }
+          }}
         >
-          <DialogTitle>เพิ่มลงตะกร้า</DialogTitle>
-          <DialogContent>
+          <DialogTitle sx={{ 
+            color: 'white', 
+            fontWeight: 'bold',
+            fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+            pb: '1vh'
+          }}>
+            เพิ่มลงตะกร้า
+          </DialogTitle>
+          <DialogContent sx={{ p: { xs: '3vw', sm: '4vw' } }}>
             {selectedCoffee && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Box sx={{ mt: '1vh' }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: '2vh',
+                    fontSize: { xs: 'clamp(1.1rem, 4vw, 1.4rem)', sm: 'clamp(1.2rem, 3vw, 1.4rem)' },
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                >
                   {selectedCoffee.name}
                 </Typography>
                 
                 {/* ตัวเลือกเมนู */}
                 {Object.entries(selectedCoffee.options || {}).map(([type, options]) => (
-                  <Box key={type} sx={{ mb: 2 }}>
-                    <Typography variant="subtitle1" gutterBottom>
+                  <Box key={type} sx={{ mb: { xs: '2vh', sm: '3vh' } }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      sx={{ 
+                        mb: '1vh',
+                        fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
+                        color: 'white',
+                        fontWeight: 'bold'
+                      }}
+                    >
                       {type === 'temperature' ? 'อุณหภูมิ' :
                        type === 'sweetness' ? 'ความหวาน' :
                        type === 'toppings' ? 'ท็อปปิ้ง' :
                        type === 'size' ? 'ขนาด' : type}
                     </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      gap: { xs: '1vw', sm: '1.5vw' }
+                    }}>
                       {options.map((option) => (
                         <Button
                           key={option.id}
                           variant={selectedOptions[type]?.id === option.id ? "contained" : "outlined"}
                           onClick={() => handleOptionChange(type, option)}
                           disabled={!option.is_available}
-                          sx={{ mb: 1 }}
+                          sx={{ 
+                            mb: '1vh',
+                            fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
+                            minHeight: { xs: '4.5vh', sm: '5vh' },
+                            borderRadius: '8px',
+                            '&.MuiButton-contained': {
+                              background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
+                              color: '#1a1a1a',
+                              fontWeight: 'bold'
+                            },
+                            '&.MuiButton-outlined': {
+                              borderColor: 'rgba(255,255,255,0.3)',
+                              color: 'rgba(255,255,255,0.7)',
+                              '&:hover': {
+                                borderColor: 'rgba(255,255,255,0.5)',
+                                backgroundColor: 'rgba(255,255,255,0.1)'
+                              }
+                            }
+                          }}
                         >
                           {option.option_name}
                           {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
@@ -670,51 +985,137 @@ const Home = () => {
                 ))}
 
                 {/* ปริมาณ */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                  <Typography variant="subtitle1" sx={{ mr: 2 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  mt: { xs: '2vh', sm: '3vh' },
+                  p: { xs: '2vw', sm: '2.5vw' },
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  borderRadius: '12px'
+                }}>
+                  <Typography 
+                    variant="subtitle1" 
+                    sx={{ 
+                      fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
+                      color: 'white',
+                      fontWeight: 'bold'
+                    }}
+                  >
                     จำนวน:
                   </Typography>
-                  <IconButton
-                    onClick={() => setSelectedCoffee(prev => ({
-                      ...prev,
-                      quantity: Math.max(1, prev.quantity - 1)
-                    }))}
-                  >
-                    <RemoveIcon />
-                  </IconButton>
-                  <Typography sx={{ mx: 2 }}>
-                    {selectedCoffee.quantity}
-                  </Typography>
-                  <IconButton
-                    onClick={() => setSelectedCoffee(prev => ({
-                      ...prev,
-                      quantity: prev.quantity + 1
-                    }))}
-                  >
-                    <AddIcon />
-                  </IconButton>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    gap: { xs: '1vw', sm: '2vw' }
+                  }}>
+                    <IconButton
+                      onClick={() => setSelectedCoffee(prev => ({
+                        ...prev,
+                        quantity: Math.max(1, prev.quantity - 1)
+                      }))}
+                      sx={{
+                        color: 'white',
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,0.2)'
+                        }
+                      }}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                    <Typography sx={{ 
+                      mx: { xs: '1vw', sm: '2vw' },
+                      fontSize: { xs: 'clamp(1.1rem, 4vw, 1.4rem)', sm: 'clamp(1.2rem, 3vw, 1.4rem)' },
+                      fontWeight: 'bold',
+                      color: 'white',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {selectedCoffee.quantity}
+                    </Typography>
+                    <IconButton
+                      onClick={() => setSelectedCoffee(prev => ({
+                        ...prev,
+                        quantity: prev.quantity + 1
+                      }))}
+                      sx={{
+                        color: 'white',
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,0.2)'
+                        }
+                      }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
                 </Box>
 
                 {/* ราคารวม */}
-                <Box sx={{ mt: 2, textAlign: 'right' }}>
-                  <Typography variant="h6">
+                <Box sx={{ 
+                  mt: { xs: '2vh', sm: '3vh' }, 
+                  textAlign: 'right',
+                  p: { xs: '2vw', sm: '2.5vw' },
+                  backgroundColor: 'rgba(255,215,0,0.1)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255,215,0,0.3)'
+                }}>
+                  <Typography 
+                    variant="h6"
+                    sx={{
+                      fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+                      color: '#FFD700',
+                      fontWeight: 'bold'
+                    }}
+                  >
                     ราคารวม: ฿{calculateTotalPrice()}
                   </Typography>
                 </Box>
               </Box>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOrderDialogOpen(false)}>ยกเลิก</Button>
-            <Button onClick={handleConfirmAddToCart} variant="contained">
+          <DialogActions sx={{ 
+            p: { xs: '3vw', sm: '4vw' },
+            gap: { xs: '1vw', sm: '2vw' }
+          }}>
+            <Button 
+              onClick={() => setOrderDialogOpen(false)}
+              sx={{ 
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+              }}
+            >
+              ยกเลิก
+            </Button>
+            <Button 
+              onClick={handleConfirmAddToCart} 
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
+                color: '#1a1a1a',
+                fontWeight: 'bold',
+                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
+                minHeight: { xs: '5vh', sm: '4.5vh' },
+                borderRadius: '8px',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
+                }
+              }}
+            >
               เพิ่มลงตะกร้า
             </Button>
           </DialogActions>
         </Dialog>
 
+        {/* Staff Login Dialog */}
         <Dialog
           open={staffLoginOpen}
           onClose={() => setStaffLoginOpen(false)}
+          maxWidth="sm"
+          fullWidth
           PaperProps={{
             sx: {
               background: 'rgba(45,45,45,0.95)',
@@ -722,11 +1123,20 @@ const Home = () => {
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '16px',
               color: 'white',
+              m: { xs: '2vw', sm: 0 },
+              maxWidth: { xs: '95vw', sm: '80vw', md: '60vw' }
             }
           }}
         >
-          <DialogTitle sx={{ color: 'white', fontWeight: 'bold' }}>Staff Login</DialogTitle>
-          <DialogContent>
+          <DialogTitle sx={{ 
+            color: 'white', 
+            fontWeight: 'bold',
+            fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+            textAlign: 'center'
+          }}>
+            Staff Login
+          </DialogTitle>
+          <DialogContent sx={{ p: { xs: '3vw', sm: '4vw' } }}>
             <TextField
               autoFocus
               margin="dense"
@@ -736,16 +1146,30 @@ const Home = () => {
               value={staffCredentials.username}
               onChange={(e) => setStaffCredentials({ ...staffCredentials, username: e.target.value })}
               sx={{
-                mb: 2,
+                mb: '2vh',
                 '& .MuiOutlinedInput-root': {
                   color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: 'white' },
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: '8px',
+                  height: { xs: '6vh', sm: '5vh' },
+                  '& fieldset': { 
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    borderRadius: '8px'
+                  },
+                  '&:hover fieldset': { 
+                    borderColor: 'rgba(255,255,255,0.5)' 
+                  },
+                  '&.Mui-focused fieldset': { 
+                    borderColor: 'white' 
+                  },
                 },
                 '& .MuiInputLabel-root': {
                   color: 'rgba(255,255,255,0.7)',
+                  fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
                 },
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: 'clamp(1rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                }
               }}
             />
             <TextField
@@ -758,18 +1182,41 @@ const Home = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: 'white' },
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: '8px',
+                  height: { xs: '6vh', sm: '5vh' },
+                  '& fieldset': { 
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    borderRadius: '8px'
+                  },
+                  '&:hover fieldset': { 
+                    borderColor: 'rgba(255,255,255,0.5)' 
+                  },
+                  '&.Mui-focused fieldset': { 
+                    borderColor: 'white' 
+                  },
                 },
                 '& .MuiInputLabel-root': {
                   color: 'rgba(255,255,255,0.7)',
+                  fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
                 },
+                '& .MuiInputBase-input': {
+                  fontSize: { xs: 'clamp(1rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                }
               }}
             />
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setStaffLoginOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          <DialogActions sx={{ 
+            p: { xs: '3vw', sm: '4vw' },
+            gap: { xs: '1vw', sm: '2vw' }
+          }}>
+            <Button 
+              onClick={() => setStaffLoginOpen(false)} 
+              sx={{ 
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+              }}
+            >
               Cancel
             </Button>
             <Button
@@ -779,6 +1226,9 @@ const Home = () => {
                 background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
                 color: '#1a1a1a',
                 fontWeight: 600,
+                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
+                minHeight: { xs: '5vh', sm: '4.5vh' },
+                borderRadius: '8px',
                 '&:hover': {
                   background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
                 }
@@ -794,11 +1244,20 @@ const Home = () => {
           autoHideDuration={3000}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          sx={{
+            '& .MuiSnackbarContent-root': {
+              borderRadius: '12px',
+              fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+            }
+          }}
         >
           <Alert 
             onClose={() => setSnackbar({ ...snackbar, open: false })} 
             severity={snackbar.severity}
-            sx={{ width: '100%' }}
+            sx={{ 
+              width: '100%',
+              fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+            }}
           >
             {snackbar.message}
           </Alert>
@@ -809,18 +1268,34 @@ const Home = () => {
           aria-label="cart" 
           sx={{
             position: 'fixed',
-            bottom: 16,
-            right: 16,
+            bottom: { xs: '2vh', sm: '3vh' },
+            right: { xs: '2vw', sm: '3vw' },
             background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
             color: '#1a1a1a',
+            width: { xs: 'clamp(3rem, 12vw, 4rem)', sm: 'clamp(3.5rem, 8vw, 4rem)' },
+            height: { xs: 'clamp(3rem, 12vw, 4rem)', sm: 'clamp(3.5rem, 8vw, 4rem)' },
             '&:hover': {
               background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
-            }
+              transform: 'scale(1.1)'
+            },
+            transition: 'all 0.3s ease'
           }}
           onClick={() => setCartOpen(true)}
         >
-          <Badge badgeContent={cart.length} color="error">
-            <CartIcon />
+          <Badge 
+            badgeContent={cart.length} 
+            color="error"
+            sx={{
+              '& .MuiBadge-badge': {
+                fontSize: { xs: 'clamp(0.7rem, 2.5vw, 0.9rem)', sm: 'clamp(0.8rem, 2vw, 0.9rem)' },
+                minWidth: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+                height: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' }
+              }
+            }}
+          >
+            <CartIcon sx={{ 
+              fontSize: { xs: 'clamp(1.5rem, 5vw, 2rem)', sm: 'clamp(1.8rem, 4vw, 2rem)' } 
+            }} />
           </Badge>
         </Fab>
 
@@ -830,15 +1305,38 @@ const Home = () => {
           onClose={() => setOptionDialogOpen(false)}
           maxWidth="sm"
           fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '16px',
+              background: 'rgba(45,45,45,0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'white',
+              m: { xs: '2vw', sm: 0 },
+              maxWidth: { xs: '95vw', sm: '80vw', md: '60vw' }
+            }
+          }}
         >
-          <DialogTitle>
+          <DialogTitle sx={{ 
+            fontSize: { xs: 'clamp(1.1rem, 4vw, 1.4rem)', sm: 'clamp(1.2rem, 3vw, 1.4rem)' },
+            color: 'white',
+            fontWeight: 'bold'
+          }}>
             เลือกตัวเลือก - {selectedCoffee?.name}
           </DialogTitle>
-          <DialogContent>
-            <Box sx={{ mt: 2 }}>
+          <DialogContent sx={{ p: { xs: '3vw', sm: '4vw' } }}>
+            <Box sx={{ mt: '1vh' }}>
               {Object.entries(menuOptions).map(([type, options]) => (
-                <Box key={type} sx={{ mb: 3 }}>
-                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                <Box key={type} sx={{ mb: { xs: '2vh', sm: '3vh' } }}>
+                  <Typography 
+                    variant="subtitle1" 
+                    sx={{ 
+                      mb: '1vh',
+                      fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
+                      color: 'white',
+                      fontWeight: 'bold'
+                    }}
+                  >
                     {type === 'temperature' ? 'อุณหภูมิ' :
                      type === 'sweetness' ? 'ความหวาน' :
                      type === 'toppings' ? 'ท็อปปิ้ง' :
@@ -855,8 +1353,31 @@ const Home = () => {
                       <FormControlLabel
                         key={option.id}
                         value={option.id}
-                        control={<Radio />}
-                        label={`${option.option_name} ${option.price_adjustment > 0 ? `(+${option.price_adjustment}฿)` : ''}`}
+                        control={
+                          <Radio 
+                            sx={{
+                              color: 'rgba(255,255,255,0.7)',
+                              fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
+                              '&.Mui-checked': {
+                                color: '#FFD700'
+                              }
+                            }}
+                          />
+                        }
+                        label={
+                          <Typography sx={{
+                            color: 'rgba(255,255,255,0.9)',
+                            fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                          }}>
+                            {option.option_name} 
+                            {option.price_adjustment > 0 && (
+                              <span style={{ color: '#FFD700', fontWeight: 'bold' }}>
+                                {` (+${option.price_adjustment}฿)`}
+                              </span>
+                            )}
+                          </Typography>
+                        }
+                        sx={{ mb: '1vh' }}
                       />
                     ))}
                   </RadioGroup>
@@ -864,12 +1385,33 @@ const Home = () => {
               ))}
             </Box>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOptionDialogOpen(false)}>ยกเลิก</Button>
+          <DialogActions sx={{ 
+            p: { xs: '3vw', sm: '4vw' },
+            gap: { xs: '1vw', sm: '2vw' }
+          }}>
+            <Button 
+              onClick={() => setOptionDialogOpen(false)}
+              sx={{ 
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+              }}
+            >
+              ยกเลิก
+            </Button>
             <Button 
               onClick={handleConfirmAddToCart}
               variant="contained"
-              color="primary"
+              sx={{
+                background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
+                color: '#1a1a1a',
+                fontWeight: 'bold',
+                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
+                minHeight: { xs: '5vh', sm: '4.5vh' },
+                borderRadius: '8px',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
+                }
+              }}
             >
               เพิ่มลงตะกร้า (฿{calculateTotalPrice()})
             </Button>

@@ -237,12 +237,13 @@ const AddCoffee = () => {
   return (
     <Box 
       sx={{ 
-        width: '100vw',
+        width: '100%',
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-        py: { xs: 2, sm: 4, md: 6, lg: 8 },
+        py: { xs: 2, sm: 3, md: 4 },
+        px: { xs: 1, sm: 2, md: 3 },
         position: 'relative',
-        overflow: 'hidden',
+        overflowX: 'hidden',
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -258,7 +259,7 @@ const AddCoffee = () => {
       <Container 
         maxWidth={false} 
         sx={{ 
-          px: { xs: 2, sm: 4, md: 6, lg: 8 },
+          px: { xs: 1, sm: 2, md: 3 },
           position: 'relative',
           zIndex: 1
         }}
@@ -266,9 +267,9 @@ const AddCoffee = () => {
         <Paper 
           elevation={0}
           sx={{ 
-            p: { xs: 2, sm: 4, md: 6, lg: 8 },
+            p: { xs: 2, sm: 3, md: 4 },
             width: '100%',
-            maxWidth: { xs: '100%', sm: '600px', md: '800px', lg: '1000px' },
+            maxWidth: { xs: '100%', sm: '600px', md: '800px' },
             mx: 'auto',
             borderRadius: 4,
             background: 'rgba(255, 255, 255, 0.05)',
@@ -277,16 +278,17 @@ const AddCoffee = () => {
             boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
           }}
         >
-          <Box sx={{ mb: { xs: 4, sm: 6, md: 8 } }}>
+          <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
             <Typography 
               variant="h2" 
               component="h1" 
               gutterBottom
               sx={{ 
-                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem', lg: '3rem' },
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
                 fontWeight: 'bold',
                 color: '#ffffff',
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                textAlign: { xs: 'center', sm: 'left' }
               }}
             >
               เพิ่มเมนูใหม่
@@ -294,8 +296,9 @@ const AddCoffee = () => {
             <Typography 
               variant="subtitle1" 
               sx={{ 
-                fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
-                color: 'rgba(255, 255, 255, 0.7)'
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                color: 'rgba(255, 255, 255, 0.7)',
+                textAlign: { xs: 'center', sm: 'left' }
               }}
             >
               กรอกข้อมูลด้านล่างเพื่อเพิ่มเมนูใหม่
@@ -303,7 +306,7 @@ const AddCoffee = () => {
           </Box>
 
           <form onSubmit={handleSubmit}>
-            <Stack spacing={{ xs: 3, sm: 4, md: 5 }}>
+            <Stack spacing={{ xs: 2, sm: 3, md: 4 }}>
               <TextField
                 required
                 fullWidth
@@ -326,10 +329,12 @@ const AddCoffee = () => {
                     }
                   },
                   '& .MuiInputLabel-root': {
-                    color: 'rgba(255, 255, 255, 0.7)'
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
                   },
                   '& .MuiInputBase-input': {
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
                   }
                 }}
               />
@@ -338,7 +343,7 @@ const AddCoffee = () => {
                 required
                 fullWidth
                 multiline
-                rows={isMobile ? 3 : isTablet ? 4 : 6}
+                rows={{ xs: 3, sm: 4, md: 5 }}
                 label="รายละเอียด"
                 name="description"
                 value={formData.description}
@@ -358,16 +363,25 @@ const AddCoffee = () => {
                     }
                   },
                   '& .MuiInputLabel-root': {
-                    color: 'rgba(255, 255, 255, 0.7)'
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
                   },
                   '& .MuiInputBase-input': {
-                    color: '#ffffff'
+                    color: '#ffffff',
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
                   }
                 }}
               />
 
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>
+              <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: { xs: 1, sm: 2 }, 
+                    color: 'white',
+                    fontSize: { xs: '1rem', sm: '1.25rem' }
+                  }}
+                >
                   ราคา
                 </Typography>
                 <TextField
@@ -396,18 +410,15 @@ const AddCoffee = () => {
                       }
                     },
                     '& .MuiInputLabel-root': {
-                      color: 'rgba(255, 255, 255, 0.7)'
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     },
                     '& .MuiInputBase-input': {
-                      color: '#ffffff'
+                      color: '#ffffff',
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     }
                   }}
                 />
-                {formData.has_options && (
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 1, display: 'block' }}>
-                    * ราคานี้เป็นราคาพื้นฐาน ราคารวมจะคำนวณจากราคาพื้นฐาน + ราคาเพิ่มเติมของตัวเลือกที่เลือก
-                  </Typography>
-                )}
               </Box>
 
               <Box sx={{ mb: 3 }}>

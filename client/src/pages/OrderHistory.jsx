@@ -129,13 +129,12 @@ const OrderHistory = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        width: '100vw',
+        width: '100%',
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         position: 'relative',
         overflowX: 'hidden',
-        py: 0,
-        pt: 4,
-        px: { xs: 2, sm: 3, md: 4 },
+        py: { xs: 2, sm: 3, md: 4 },
+        px: { xs: 1, sm: 2, md: 3 },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -155,20 +154,26 @@ const OrderHistory = () => {
           position: 'relative',
           zIndex: 1,
           flexGrow: 1,
-          width: '100%',
-          pt: { xs: 8, sm: 9, md: 10 }
+          width: '100%'
         }}
       >
         <Box 
           sx={{ 
             display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 4,
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            mb: { xs: 2, sm: 3, md: 4 },
+            gap: { xs: 2, sm: 0 },
             width: '100%'
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 1, sm: 2 },
+            width: { xs: '100%', sm: 'auto' }
+          }}>
             <IconButton 
               onClick={() => navigate('/staff')}
               sx={{ 
@@ -186,7 +191,7 @@ const OrderHistory = () => {
               sx={{ 
                 color: 'white',
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' }
+                fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2.25rem' }
               }}
             >
               ประวัติออเดอร์
@@ -196,20 +201,20 @@ const OrderHistory = () => {
 
         <Paper 
           sx={{ 
-            p: 2, 
-            mb: 4,
+            p: { xs: 1.5, sm: 2 }, 
+            mb: { xs: 2, sm: 3, md: 4 },
             background: 'rgba(255,255,255,0.1)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '16px'
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.1)'
           }}
         >
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={{ xs: 1, sm: 2 }} alignItems="center">
+            <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
-                variant="outlined"
-                placeholder="ค้นหาตามชื่อลูกค้าหรือวันที่..."
+                size="small"
+                placeholder="ค้นหาลูกค้าหรือวันที่..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
@@ -225,9 +230,12 @@ const OrderHistory = () => {
                     '&.Mui-focused fieldset': { borderColor: 'white' },
                   }
                 }}
+                InputLabelProps={{
+                  sx: { color: 'rgba(255,255,255,0.7)' }
+                }}
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={6} sm={3} md={2}>
               <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={thLocale}>
                 <DatePicker
                   label="วันที่เริ่มต้น"
@@ -235,22 +243,23 @@ const OrderHistory = () => {
                   onChange={setStartDate}
                   slotProps={{
                     textField: {
+                      size: "small",
                       fullWidth: true,
-                      variant: 'outlined',
                       sx: {
-                        color: 'white',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                        '&.Mui-focused fieldset': { borderColor: 'white' },
-                        '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                        '& .MuiInputBase-input': { color: 'white' },
+                        '& .MuiOutlinedInput-root': {
+                          color: 'white',
+                          '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                          '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                          '&.Mui-focused fieldset': { borderColor: 'white' },
+                        },
+                        '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
                       }
                     }
                   }}
                 />
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={6} sm={3} md={2}>
               <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={thLocale}>
                 <DatePicker
                   label="วันที่สิ้นสุด"
@@ -258,15 +267,16 @@ const OrderHistory = () => {
                   onChange={setEndDate}
                   slotProps={{
                     textField: {
+                      size: "small",
                       fullWidth: true,
-                      variant: 'outlined',
                       sx: {
-                        color: 'white',
-                        '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                        '&.Mui-focused fieldset': { borderColor: 'white' },
-                        '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                        '& .MuiInputBase-input': { color: 'white' },
+                        '& .MuiOutlinedInput-root': {
+                          color: 'white',
+                          '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                          '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                          '&.Mui-focused fieldset': { borderColor: 'white' },
+                        },
+                        '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
                       }
                     }
                   }}
@@ -276,22 +286,19 @@ const OrderHistory = () => {
           </Grid>
         </Paper>
 
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
           {Object.entries(groupedOrders).map(([date, dateOrders]) => (
             <Accordion
               key={date}
               sx={{
                 background: 'rgba(255,255,255,0.1)',
                 backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
                 border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '16px !important',
                 mb: 2,
                 '&:before': { display: 'none' },
-                '& .MuiAccordionSummary-root': {
-                  borderRadius: '16px',
-                  '&:hover': {
-                    background: 'rgba(255,255,255,0.05)'
-                  }
+                '&.Mui-expanded': {
+                  margin: '16px 0'
                 }
               }}
             >
@@ -299,184 +306,236 @@ const OrderHistory = () => {
                 expandIcon={<ExpandMoreIcon sx={{ color: 'white' }} />}
                 sx={{
                   '& .MuiAccordionSummary-content': {
-                    display: 'flex',
                     alignItems: 'center',
-                    gap: 2
+                    gap: 1
                   }
                 }}
               >
-                <CalendarIcon sx={{ color: 'white' }} />
+                <CalendarIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
                 <Typography sx={{ color: 'white', fontWeight: 'bold' }}>
-                  {date} ({dateOrders.length} รายการ)
+                  {date} ({dateOrders.length} ออเดอร์)
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails sx={{ p: 0 }}>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>เวลา</TableCell>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>ชื่อลูกค้า</TableCell>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>สถานะ</TableCell>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>ยอดรวม</TableCell>
-                        <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem' }}>รายละเอียด</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {dateOrders.map((order) => (
-                        <TableRow 
-                          key={order.id}
-                          sx={{
-                            '&:hover': {
-                              background: 'rgba(255,255,255,0.05)'
-                            }
+              <AccordionDetails sx={{ p: { xs: 1, sm: 2 } }}>
+                <Grid container spacing={{ xs: 1, sm: 2 }}>
+                  {dateOrders.map((order) => (
+                    <Grid item xs={12} sm={6} md={4} key={order.id}>
+                      <Paper
+                        sx={{
+                          p: { xs: 1.5, sm: 2 },
+                          background: 'rgba(255,255,255,0.05)',
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                          }
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              color: 'white', 
+                              fontWeight: 'bold',
+                              fontSize: { xs: '0.9rem', sm: '1rem' }
+                            }}
+                          >
+                            #{order.id}
+                          </Typography>
+                          <Chip
+                            label={order.status}
+                            size="small"
+                            sx={{
+                              backgroundColor: 
+                                order.status === 'completed' ? '#4caf50' :
+                                order.status === 'cancelled' ? '#f44336' :
+                                order.status === 'preparing' ? '#2196f3' : '#ff9800',
+                              color: 'white',
+                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              height: { xs: '20px', sm: '24px' }
+                            }}
+                          />
+                        </Box>
+                        
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: 'rgba(255,255,255,0.7)',
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                            mb: 1
                           }}
                         >
-                          <TableCell sx={{ color: 'white' }}>
-                            {new Date(order.orderTime).toLocaleTimeString('th-TH', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </TableCell>
-                          <TableCell sx={{ color: 'white' }}>{order.customerName}</TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={order.status}
-                              color={
-                                order.status === 'เสร็จสิ้น' ? 'success' :
-                                order.status === 'รอดำเนินการ' ? 'warning' :
-                                'error'
-                              }
-                              sx={{
-                                fontWeight: 'bold',
-                                minWidth: '100px'
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>{order.total} บาท</TableCell>
-                          <TableCell>
-                            <IconButton 
-                              onClick={() => handleViewOrder(order)}
+                          {order.customerName}
+                        </Typography>
+                        
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: 'rgba(255,255,255,0.7)',
+                            fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                            mb: 1
+                          }}
+                        >
+                          {formatDate(order.orderTime)}
+                        </Typography>
+                        
+                        <Box sx={{ mb: 1 }}>
+                          {order.items.slice(0, 2).map((item, index) => (
+                            <Typography 
+                              key={index} 
+                              variant="body2" 
                               sx={{ 
-                                color: 'white',
-                                '&:hover': {
-                                  background: 'rgba(255,255,255,0.1)'
-                                }
+                                color: 'rgba(255,255,255,0.8)',
+                                fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                                lineHeight: 1.3
                               }}
                             >
-                              <VisibilityIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                              • {item.name} x{item.quantity}
+                            </Typography>
+                          ))}
+                          {order.items.length > 2 && (
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                color: 'rgba(255,255,255,0.6)',
+                                fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                              }}
+                            >
+                              และอีก {order.items.length - 2} รายการ
+                            </Typography>
+                          )}
+                        </Box>
+                        
+                        <Box sx={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          mt: 1
+                        }}>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              color: '#FFD700', 
+                              fontWeight: 'bold',
+                              fontSize: { xs: '0.9rem', sm: '1rem' }
+                            }}
+                          >
+                            ฿{order.total}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleViewOrder(order)}
+                            sx={{
+                              color: 'white',
+                              background: 'rgba(255, 255, 255, 0.1)',
+                              minWidth: { xs: '32px', sm: '36px' },
+                              minHeight: { xs: '32px', sm: '36px' },
+                              '&:hover': {
+                                background: 'rgba(255, 255, 255, 0.2)',
+                              }
+                            }}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
               </AccordionDetails>
             </Accordion>
           ))}
         </Box>
 
-        <Dialog 
-          open={dialogOpen} 
+        {Object.keys(groupedOrders).length === 0 && (
+          <Box sx={{ 
+            textAlign: 'center', 
+            py: { xs: 4, sm: 6, md: 8 },
+            color: 'rgba(255,255,255,0.7)'
+          }}>
+            <Typography variant="h6" sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+              ไม่พบประวัติออเดอร์
+            </Typography>
+            <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              ลองเปลี่ยนเงื่อนไขการค้นหาหรือช่วงวันที่
+            </Typography>
+          </Box>
+        )}
+
+        <Dialog
+          open={dialogOpen}
           onClose={handleCloseDialog}
           maxWidth="md"
           fullWidth
           PaperProps={{
             sx: {
-              background: 'rgba(45,45,45,0.95)',
+              background: 'rgba(255, 255, 255, 0.1)',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '16px'
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              width: { xs: '95%', sm: '80%', md: '70%' }
             }
           }}
         >
           {selectedOrder && (
             <>
-              <DialogTitle sx={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                รายละเอียดออเดอร์
+              <DialogTitle sx={{ color: 'white', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                รายละเอียดออเดอร์ #{selectedOrder.id}
               </DialogTitle>
               <DialogContent>
-                <Box sx={{ mt: 2 }}>
-                  <Grid container spacing={2} sx={{ mb: 3 }}>
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="subtitle1" sx={{ color: 'white', mb: 1 }}>
-                        วันที่: {formatDate(selectedOrder.orderTime)}
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                    ข้อมูลลูกค้า
+                  </Typography>
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    ชื่อ: {selectedOrder.customerName}
+                  </Typography>
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    เวลา: {formatDate(selectedOrder.orderTime)}
+                  </Typography>
+                </Box>
+                
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                    รายการสินค้า
+                  </Typography>
+                  {selectedOrder.items.map((item, index) => (
+                    <Box key={index} sx={{ mb: 1, p: 1, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
+                      <Typography sx={{ color: 'white', fontWeight: 'bold' }}>
+                        {item.name} x{item.quantity}
                       </Typography>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="subtitle1" sx={{ color: 'white', mb: 1 }}>
-                        ชื่อลูกค้า: {selectedOrder.customerName}
+                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                        ฿{item.price} ต่อชิ้น
                       </Typography>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Typography variant="subtitle1" sx={{ color: 'white', mb: 1 }}>
-                        สถานะ: {selectedOrder.status}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-
-                  <TableContainer 
-                    component={Paper} 
-                    sx={{ 
-                      mb: 2, 
-                      background: 'rgba(255,255,255,0.05)',
-                      borderRadius: '8px'
-                    }}
-                  >
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>รายการ</TableCell>
-                          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ราคา</TableCell>
-                          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>จำนวน</TableCell>
-                          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ความหวาน</TableCell>
-                          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>อุณหภูมิ</TableCell>
-                          <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>หมายเหตุ</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {selectedOrder.items.map((item, index) => (
-                          <TableRow 
-                            key={index}
-                            sx={{
-                              '&:hover': {
-                                background: 'rgba(255,255,255,0.05)'
-                              }
-                            }}
-                          >
-                            <TableCell sx={{ color: 'white' }}>{item.name}</TableCell>
-                            <TableCell sx={{ color: 'white' }}>{item.price} บาท</TableCell>
-                            <TableCell sx={{ color: 'white' }}>{item.quantity}</TableCell>
-                            <TableCell sx={{ color: 'white' }}>{item.sweetness}</TableCell>
-                            <TableCell sx={{ color: 'white' }}>{item.temperature}</TableCell>
-                            <TableCell sx={{ color: 'white' }}>{item.notes}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      color: 'white', 
-                      textAlign: 'right',
-                      fontWeight: 'bold',
-                      fontSize: '1.25rem'
-                    }}
-                  >
-                    ยอดรวม: {selectedOrder.total} บาท
+                    </Box>
+                  ))}
+                </Box>
+                
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6" sx={{ color: 'white' }}>
+                    รวมทั้งหมด:
+                  </Typography>
+                  <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+                    ฿{selectedOrder.total}
                   </Typography>
                 </Box>
               </DialogContent>
-              <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', p: 2 }}>
+              <DialogActions sx={{ p: { xs: 2, sm: 3 } }}>
                 <Button 
-                  onClick={handleCloseDialog} 
-                  sx={{ 
+                  onClick={handleCloseDialog}
+                  sx={{
                     color: 'white',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    minWidth: { xs: '80px', sm: '100px' },
+                    minHeight: { xs: '40px', sm: '36px' },
                     '&:hover': {
-                      background: 'rgba(255,255,255,0.1)'
+                      background: 'rgba(255, 255, 255, 0.2)',
                     }
                   }}
                 >
