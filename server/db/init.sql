@@ -12,10 +12,6 @@ CREATE TABLE IF NOT EXISTS staff (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Insert initial staff
-INSERT INTO staff (username, password, role) VALUES 
-('admin', '$2b$10$YourHashedPasswordHere', 'admin');
-
 CREATE TABLE IF NOT EXISTS coffees (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,

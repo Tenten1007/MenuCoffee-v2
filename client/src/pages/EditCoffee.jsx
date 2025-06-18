@@ -688,11 +688,21 @@ const EditCoffee = () => {
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12}>
                   <FormControl fullWidth>
-                    <InputLabel>ประเภทตัวเลือก</InputLabel>
+                    <InputLabel id="option-type-label">ประเภทตัวเลือก</InputLabel>
                     <Select
+                      labelId="option-type-label"
                       value={optionForm.option_type}
                       onChange={(e) => setOptionForm({ ...optionForm, option_type: e.target.value })}
                       label="ประเภทตัวเลือก"
+                      fullWidth
+                      MenuProps={{
+                        PaperProps: {
+                          style: {
+                            minWidth: 200,
+                            maxWidth: 350,
+                          },
+                        },
+                      }}
                     >
                       {optionTypes.map((type) => (
                         <MenuItem key={type.value} value={type.value}>

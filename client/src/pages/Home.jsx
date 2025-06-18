@@ -53,7 +53,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-import Navbar from '../components/Navbar';
+import Navbar, { NAVBAR_HEIGHT } from '../components/Navbar';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -305,6 +305,7 @@ const Home = () => {
         sx={{
           minHeight: '100vh',
           width: '100vw',
+          paddingTop: { xs: `${NAVBAR_HEIGHT + 8}px`, sm: `${NAVBAR_HEIGHT + 16}px` },
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
           position: 'relative',
           overflowX: 'hidden',

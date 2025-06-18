@@ -7,7 +7,7 @@ require('dotenv').config();
 exports.createInitialStaff = async () => {
   try {
     console.log('Checking for existing admin user...');
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', ['admin']);
+    const [rows] = await pool.query('SELECT * FROM staff WHERE username = ?', ['admin']);
     
     if (rows.length === 0) {
       console.log('No admin user found, creating new admin user...');
@@ -15,8 +15,8 @@ exports.createInitialStaff = async () => {
       console.log('Password hashed successfully');
       
       await pool.query(
-        'INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)',
-        ['admin', hashedPassword, 'Admin User', 'admin']
+        'INSERT INTO staff (username, password, role) VALUES (?, ?, ?)',
+        ['admin', hashedPassword, 'admin']
       );
       console.log('Initial admin user created successfully');
     } else {
@@ -33,7 +33,7 @@ exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+    const [rows] = await pool.query('SELECT * FROM staff WHERE username = ?', [username]);
     
     if (rows.length === 0) {
       return res.status(401).json({ message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });

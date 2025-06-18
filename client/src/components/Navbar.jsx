@@ -96,34 +96,7 @@ const Navbar = () => {
                 </Button>
               )}
             </>
-          ) : (
-            <>
-              <Button
-                color="inherit"
-                onClick={() => navigate('/login')}
-                sx={{
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                เข้าสู่ระบบ
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => navigate('/register')}
-                sx={{
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
-                  '&:hover': {
-                    background: 'linear-gradient(45deg, #1976D2 30%, #00BCD4 90%)',
-                  },
-                }}
-              >
-                สมัครสมาชิก
-              </Button>
-            </>
-          )}
+          ) : null}
         </Box>
       </Toolbar>
     </AppBar>
