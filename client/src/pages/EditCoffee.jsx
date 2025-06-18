@@ -14,10 +14,25 @@ import {
   InputLabel,
   Stack,
   CircularProgress,
-  IconButton
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Switch,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
+import { 
+  CloudUpload as CloudUploadIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon
+} from '@mui/icons-material';
 import axios from 'axios';
 
 const EditCoffee = () => {
@@ -31,7 +46,9 @@ const EditCoffee = () => {
     name: '',
     description: '',
     price: '',
+    base_price: '',
     category: '',
+    has_options: false
   });
   const [imageFile, setImageFile] = useState(null);
   const [currentImage, setCurrentImage] = useState('');
@@ -39,6 +56,25 @@ const EditCoffee = () => {
   const [error, setError] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [menuOptions, setMenuOptions] = useState([]);
+  const [optionDialogOpen, setOptionDialogOpen] = useState(false);
+  const [editingOption, setEditingOption] = useState(null);
+  const [optionForm, setOptionForm] = useState({
+    option_type: '',
+    option_name: '',
+    price_adjustment: '',
+    is_available: true
+  });
+
+  const [optionTypes, setOptionTypes] = useState([
+    { value: 'temperature', label: 'อุณหภูมิ' },
+    { value: 'sweetness', label: 'ความหวาน' },
+    { value: 'toppings', label: 'ท็อปปิ้ง' },
+    { value: 'size', label: 'ขนาด' }
+  ]);
+
+  const [newOptionType, setNewOptionType] = useState({ value: '', label: '' });
+  const [optionTypeDialogOpen, setOptionTypeDialogOpen] = useState(false);
 
   const categories = [
     { value: 'all', label: 'ทั้งหมด' },
@@ -56,6 +92,7 @@ const EditCoffee = () => {
 
   useEffect(() => {
     fetchCoffee();
+    fetchMenuOptions();
   }, [id]);
 
   const fetchCoffee = async () => {
@@ -68,7 +105,9 @@ const EditCoffee = () => {
           name: response.data.name || '',
           description: response.data.description || '',
           price: response.data.price || '',
+          base_price: response.data.base_price || '',
           category: response.data.category || '',
+          has_options: response.data.has_options || false
         });
         setCurrentImage(response.data.image || '');
         setPreviewImage(response.data.image || '');
@@ -78,6 +117,15 @@ const EditCoffee = () => {
       setError('ไม่สามารถโหลดข้อมูลกาแฟได้ กรุณาลองใหม่อีกครั้ง');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMenuOptions = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/coffees/${id}/options`);
+      setMenuOptions(response.data);
+    } catch (error) {
+      console.error('Error fetching menu options:', error);
     }
   };
 
@@ -107,7 +155,27 @@ const EditCoffee = () => {
       data.append('name', formData.name);
       data.append('description', formData.description);
       data.append('price', formData.price);
+      data.append('base_price', formData.base_price);
       data.append('category', formData.category);
+      data.append('has_options', formData.has_options);
+
+      if (formData.has_options && menuOptions.length > 0) {
+        const validOptions = menuOptions.map(opt => ({
+          option_type: opt.option_type,
+          option_name: opt.option_name,
+          price_adjustment: parseFloat(opt.price_adjustment) || 0,
+          is_available: opt.is_available
+        })).filter(opt => 
+          opt.option_type && 
+          opt.option_name && 
+          opt.price_adjustment !== undefined
+        );
+
+        if (validOptions.length > 0) {
+          data.append('menu_options', JSON.stringify(validOptions));
+        }
+      }
+
       if (imageFile) {
         data.append('image', imageFile);
       } else if (currentImage) {
@@ -125,6 +193,75 @@ const EditCoffee = () => {
       setError('ไม่สามารถอัพเดทข้อมูลกาแฟได้ กรุณาลองใหม่อีกครั้ง');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOptionDialogOpen = (option = null) => {
+    if (option) {
+      setEditingOption(option);
+      setOptionForm({
+        option_type: option.option_type,
+        option_name: option.option_name,
+        price_adjustment: option.price_adjustment,
+        is_available: option.is_available
+      });
+    } else {
+      setEditingOption(null);
+      setOptionForm({
+        option_type: '',
+        option_name: '',
+        price_adjustment: '',
+        is_available: true
+      });
+    }
+    setOptionDialogOpen(true);
+  };
+
+  const handleOptionDialogClose = () => {
+    setOptionDialogOpen(false);
+    setEditingOption(null);
+    setOptionForm({
+      option_type: '',
+      option_name: '',
+      price_adjustment: '',
+      is_available: true
+    });
+  };
+
+  const handleOptionSubmit = async () => {
+    try {
+      if (editingOption) {
+        await axios.put(
+          `http://localhost:5000/api/coffees/${id}/options/${editingOption.id}`,
+          optionForm
+        );
+      } else {
+        await axios.post(
+          `http://localhost:5000/api/coffees/${id}/options`,
+          optionForm
+        );
+      }
+      fetchMenuOptions();
+      handleOptionDialogClose();
+    } catch (error) {
+      console.error('Error saving menu option:', error);
+    }
+  };
+
+  const handleDeleteOption = async (optionId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/coffees/${id}/options/${optionId}`);
+      fetchMenuOptions();
+    } catch (error) {
+      console.error('Error deleting menu option:', error);
+    }
+  };
+
+  const handleAddOptionType = () => {
+    if (newOptionType.value && newOptionType.label) {
+      setOptionTypes([...optionTypes, newOptionType]);
+      setNewOptionType({ value: '', label: '' });
+      setOptionTypeDialogOpen(false);
     }
   };
 
@@ -477,6 +614,157 @@ const EditCoffee = () => {
               </Button>
             </Box>
           </form>
+
+          {/* Menu Options Section */}
+          <Box sx={{ mt: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">ตัวเลือกเมนู</Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => handleOptionDialogOpen()}
+              >
+                เพิ่มตัวเลือก
+              </Button>
+            </Box>
+
+            <List>
+              {menuOptions.map((option) => (
+                <ListItem
+                  key={option.id}
+                  sx={{
+                    bgcolor: 'background.paper',
+                    mb: 1,
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider'
+                  }}
+                >
+                  <ListItemText
+                    primary={option.option_name}
+                    secondary={`${optionTypes.find(t => t.value === option.option_type)?.label || option.option_type} - ราคาเพิ่ม ${option.price_adjustment} บาท`}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="edit"
+                      onClick={() => handleOptionDialogOpen(option)}
+                      sx={{ mr: 1 }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleDeleteOption(option.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+
+          {/* Option Dialog */}
+          <Dialog open={optionDialogOpen} onClose={handleOptionDialogClose} maxWidth="sm" fullWidth>
+            <DialogTitle>
+              {editingOption ? 'แก้ไขตัวเลือก' : 'เพิ่มตัวเลือกใหม่'}
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>ประเภทตัวเลือก</InputLabel>
+                    <Select
+                      value={optionForm.option_type}
+                      onChange={(e) => setOptionForm({ ...optionForm, option_type: e.target.value })}
+                      label="ประเภทตัวเลือก"
+                    >
+                      {optionTypes.map((type) => (
+                        <MenuItem key={type.value} value={type.value}>
+                          {type.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Button
+                    size="small"
+                    onClick={() => setOptionTypeDialogOpen(true)}
+                    sx={{ mt: 1 }}
+                  >
+                    + เพิ่มประเภทตัวเลือกใหม่
+                  </Button>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="ชื่อตัวเลือก"
+                    value={optionForm.option_name}
+                    onChange={(e) => setOptionForm({ ...optionForm, option_name: e.target.value })}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="ราคาเพิ่มเติม"
+                    type="number"
+                    value={optionForm.price_adjustment}
+                    onChange={(e) => setOptionForm({ ...optionForm, price_adjustment: e.target.value })}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography>เปิดใช้งาน</Typography>
+                      <Switch
+                        checked={optionForm.is_available}
+                        onChange={(e) => setOptionForm({ ...optionForm, is_available: e.target.checked })}
+                      />
+                    </Box>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleOptionDialogClose}>ยกเลิก</Button>
+              <Button onClick={handleOptionSubmit} variant="contained">
+                บันทึก
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Option Type Dialog */}
+          <Dialog open={optionTypeDialogOpen} onClose={() => setOptionTypeDialogOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle>เพิ่มประเภทตัวเลือกใหม่</DialogTitle>
+            <DialogContent>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="ชื่อประเภท (ภาษาไทย)"
+                    value={newOptionType.label}
+                    onChange={(e) => setNewOptionType({ ...newOptionType, label: e.target.value })}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="รหัสประเภท (ภาษาอังกฤษ)"
+                    value={newOptionType.value}
+                    onChange={(e) => setNewOptionType({ ...newOptionType, value: e.target.value })}
+                    helperText="ใช้ตัวพิมพ์เล็กและเครื่องหมายขีด (-) แทนช่องว่าง"
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOptionTypeDialogOpen(false)}>ยกเลิก</Button>
+              <Button onClick={handleAddOptionType} variant="contained">
+                เพิ่มประเภท
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Paper>
       </Container>
     </Box>

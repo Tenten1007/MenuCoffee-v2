@@ -37,7 +37,10 @@ import {
   DialogContentText,
   Tabs,
   Tab,
-  InputAdornment
+  InputAdornment,
+  RadioGroup,
+  FormControlLabel,
+  Radio
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -65,6 +68,9 @@ const Home = () => {
   const [staffCredentials, setStaffCredentials] = useState({ username: '', password: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [menuOptions, setMenuOptions] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [optionDialogOpen, setOptionDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { isLoggedIn, login } = useAuth();
@@ -109,23 +115,75 @@ const Home = () => {
     setFilteredCoffees(filtered);
   };
 
-  const handleAddToCart = (coffee) => {
-    setSelectedCoffee({
-      ...coffee,
-      quantity: 1,
-      sweetness: 'ปกติ',
-      temperature: 'ร้อน',
-      note: ''
-    });
-    setOrderDialogOpen(true);
+  const handleAddToCart = async (coffee) => {
+    try {
+      // ดึงข้อมูลตัวเลือกทั้งหมด
+      const response = await axios.get(`http://localhost:5000/api/coffees/${coffee.id}/options`);
+      const options = response.data;
+
+      // จัดกลุ่มตัวเลือกตามประเภท
+      const groupedOptions = options.reduce((acc, option) => {
+        if (!acc[option.option_type]) {
+          acc[option.option_type] = [];
+        }
+        acc[option.option_type].push(option);
+        return acc;
+      }, {});
+
+      // ตั้งค่าเริ่มต้นให้ว่างเปล่า
+      const initialSelectedOptions = {};
+      
+      setMenuOptions(groupedOptions);
+      setSelectedOptions(initialSelectedOptions);
+      setSelectedCoffee(coffee);
+      setOptionDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching menu options:', error);
+      alert('ไม่สามารถดึงข้อมูลตัวเลือกได้');
+    }
+  };
+
+  const handleOptionChange = (type, option) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [type]: option
+    }));
+  };
+
+  const calculateTotalPrice = () => {
+    if (!selectedCoffee) return 0;
+    
+    const basePrice = parseFloat(selectedCoffee.price);
+    const optionsPrice = Object.values(selectedOptions).reduce((total, option) => {
+      return total + (parseFloat(option.price_adjustment) || 0);
+    }, 0);
+    
+    return basePrice + optionsPrice;
   };
 
   const handleConfirmAddToCart = () => {
-    if (!selectedCoffee) return;
+    // ตรวจสอบว่าผู้ใช้ได้เลือกตัวเลือกครบทุกประเภทหรือไม่
+    const allTypesSelected = Object.keys(menuOptions).every(type => selectedOptions[type]);
+    
+    if (!allTypesSelected) {
+      alert('กรุณาเลือกตัวเลือกให้ครบทุกประเภท');
+      return;
+    }
 
-    setCart([...cart, selectedCoffee]);
-    setOrderDialogOpen(false);
+    // เพิ่มลงตะกร้า
+    const cartItem = {
+      id: selectedCoffee.id,
+      name: selectedCoffee.name,
+      price: selectedCoffee.price,
+      quantity: 1,
+      totalPrice: calculateTotalPrice(),
+      selectedOptions: selectedOptions
+    };
+
+    setCart(prev => [...prev, cartItem]);
+    setOptionDialogOpen(false);
     setSelectedCoffee(null);
+    setSelectedOptions({});
     setSnackbar({
       open: true,
       message: 'เพิ่มลงตะกร้าเรียบร้อยแล้ว',
@@ -489,10 +547,20 @@ const Home = () => {
                       </Typography>
                     }
                     secondary={
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                        ฿{item.price} | {item.sweetness} | {item.temperature}
-                        {item.note && ` | ${item.note}`}
-                      </Typography>
+                      <Box>
+                        {Object.entries(item.selectedOptions || {}).map(([type, option]) => (
+                          <Typography key={type} variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', display: 'block' }}>
+                            {type === 'temperature' ? 'อุณหภูมิ' :
+                             type === 'sweetness' ? 'ความหวาน' :
+                             type === 'toppings' ? 'ท็อปปิ้ง' :
+                             type === 'size' ? 'ขนาด' : type}: {option.option_name}
+                            {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                          </Typography>
+                        ))}
+                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          ฿{item.totalPrice}
+                        </Typography>
+                      </Box>
                     }
                   />
                   <ListItemSecondaryAction>
@@ -560,119 +628,81 @@ const Home = () => {
       <Dialog
         open={orderDialogOpen}
         onClose={() => setOrderDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            background: 'rgba(45,45,45,0.95)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '16px',
-            color: 'white',
-          }
-        }}
+        maxWidth="sm"
+        fullWidth
       >
-        <DialogTitle sx={{ color: 'white', fontWeight: 'bold' }}>
-          {selectedCoffee?.name}
-        </DialogTitle>
+        <DialogTitle>เพิ่มลงตะกร้า</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, color: 'rgba(255,255,255,0.7)' }}>
-            {selectedCoffee?.description}
-          </Typography>
-          <TextField
-            label="จำนวน"
-            type="number"
-            fullWidth
-            value={selectedCoffee?.quantity || 1}
-            onChange={(e) => setSelectedCoffee({ ...selectedCoffee, quantity: parseInt(e.target.value) || 1 })}
-            inputProps={{ min: 1 }}
-            sx={{ 
-              mb: 2,
-              '& .MuiOutlinedInput-root': {
-                color: 'white',
-                '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                '&.Mui-focused fieldset': { borderColor: 'white' },
-              },
-              '& .MuiInputLabel-root': {
-                color: 'rgba(255,255,255,0.7)',
-              },
-            }}
-          />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>ความหวาน</InputLabel>
-            <Select
-              value={selectedCoffee?.sweetness || 'ปกติ'}
-              label="ความหวาน"
-              onChange={(e) => setSelectedCoffee({ ...selectedCoffee, sweetness: e.target.value })}
-              sx={{
-                color: 'white',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                '& .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.7)' },
-              }}
-            >
-              <MenuItem value="ไม่หวาน">ไม่หวาน</MenuItem>
-              <MenuItem value="หวานน้อย">หวานน้อย</MenuItem>
-              <MenuItem value="ปกติ">ปกติ</MenuItem>
-              <MenuItem value="หวานมาก">หวานมาก</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel sx={{ color: 'rgba(255,255,255,0.7)' }}>ประเภทเมนู</InputLabel>
-            <Select
-              value={selectedCoffee?.temperature || 'ร้อน'}
-              label="ประเภทเมนู"
-              onChange={(e) => setSelectedCoffee({ ...selectedCoffee, temperature: e.target.value })}
-              sx={{
-                color: 'white',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                '& .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.7)' },
-              }}
-            >
-              <MenuItem value="ร้อน">ร้อน</MenuItem>
-              <MenuItem value="เย็น">เย็น</MenuItem>
-              <MenuItem value="ปั่น">ปั่น</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="โน้ตพิเศษ (เช่น ไม่ใส่หลอด)"
-            type="text"
-            fullWidth
-            multiline
-            rows={2}
-            value={selectedCoffee?.note || ''}
-            onChange={(e) => setSelectedCoffee({ ...selectedCoffee, note: e.target.value })}
-            sx={{ 
-              '& .MuiOutlinedInput-root': {
-                color: 'white',
-                '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                '&.Mui-focused fieldset': { borderColor: 'white' },
-              },
-              '& .MuiInputLabel-root': {
-                color: 'rgba(255,255,255,0.7)',
-              },
-            }}
-          />
+          {selectedCoffee && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                {selectedCoffee.name}
+              </Typography>
+              
+              {/* ตัวเลือกเมนู */}
+              {Object.entries(selectedCoffee.options || {}).map(([type, options]) => (
+                <Box key={type} sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    {type === 'temperature' ? 'อุณหภูมิ' :
+                     type === 'sweetness' ? 'ความหวาน' :
+                     type === 'toppings' ? 'ท็อปปิ้ง' :
+                     type === 'size' ? 'ขนาด' : type}
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {options.map((option) => (
+                      <Button
+                        key={option.id}
+                        variant={selectedOptions[type]?.id === option.id ? "contained" : "outlined"}
+                        onClick={() => handleOptionChange(type, option)}
+                        disabled={!option.is_available}
+                        sx={{ mb: 1 }}
+                      >
+                        {option.option_name}
+                        {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                      </Button>
+                    ))}
+                  </Box>
+                </Box>
+              ))}
+
+              {/* ปริมาณ */}
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <Typography variant="subtitle1" sx={{ mr: 2 }}>
+                  จำนวน:
+                </Typography>
+                <IconButton
+                  onClick={() => setSelectedCoffee(prev => ({
+                    ...prev,
+                    quantity: Math.max(1, prev.quantity - 1)
+                  }))}
+                >
+                  <RemoveIcon />
+                </IconButton>
+                <Typography sx={{ mx: 2 }}>
+                  {selectedCoffee.quantity}
+                </Typography>
+                <IconButton
+                  onClick={() => setSelectedCoffee(prev => ({
+                    ...prev,
+                    quantity: prev.quantity + 1
+                  }))}
+                >
+                  <AddIcon />
+                </IconButton>
+              </Box>
+
+              {/* ราคารวม */}
+              <Box sx={{ mt: 2, textAlign: 'right' }}>
+                <Typography variant="h6">
+                  ราคารวม: ฿{calculateTotalPrice()}
+                </Typography>
+              </Box>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOrderDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
-            ยกเลิก
-          </Button>
-          <Button 
-            onClick={handleConfirmAddToCart} 
-            variant="contained"
-            sx={{
-              background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
-              color: '#1a1a1a',
-              fontWeight: 600,
-              '&:hover': {
-                background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
-              }
-            }}
-          >
+          <Button onClick={() => setOrderDialogOpen(false)}>ยกเลิก</Button>
+          <Button onClick={handleConfirmAddToCart} variant="contained">
             เพิ่มลงตะกร้า
           </Button>
         </DialogActions>
@@ -789,6 +819,58 @@ const Home = () => {
           <CartIcon />
         </Badge>
       </Fab>
+
+      {/* Dialog สำหรับเลือกตัวเลือก */}
+      <Dialog 
+        open={optionDialogOpen} 
+        onClose={() => setOptionDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          เลือกตัวเลือก - {selectedCoffee?.name}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            {Object.entries(menuOptions).map(([type, options]) => (
+              <Box key={type} sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                  {type === 'temperature' ? 'อุณหภูมิ' :
+                   type === 'sweetness' ? 'ความหวาน' :
+                   type === 'toppings' ? 'ท็อปปิ้ง' :
+                   type === 'size' ? 'ขนาด' : type}
+                </Typography>
+                <RadioGroup
+                  value={selectedOptions[type]?.id || ''}
+                  onChange={(e) => {
+                    const selectedOption = options.find(opt => opt.id === parseInt(e.target.value));
+                    handleOptionChange(type, selectedOption);
+                  }}
+                >
+                  {options.map((option) => (
+                    <FormControlLabel
+                      key={option.id}
+                      value={option.id}
+                      control={<Radio />}
+                      label={`${option.option_name} ${option.price_adjustment > 0 ? `(+${option.price_adjustment}฿)` : ''}`}
+                    />
+                  ))}
+                </RadioGroup>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOptionDialogOpen(false)}>ยกเลิก</Button>
+          <Button 
+            onClick={handleConfirmAddToCart}
+            variant="contained"
+            color="primary"
+          >
+            เพิ่มลงตะกร้า (฿{calculateTotalPrice()})
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

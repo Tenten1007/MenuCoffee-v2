@@ -15,21 +15,68 @@ const pool = mysql.createPool({
 // Create a new coffee
 exports.create = async (req, res) => {
   try {
-    const { name, description, price, category } = req.body;
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+    const { name, description, price, category, has_options, menu_options } = req.body;
+    
+    // ตรวจสอบว่ามีการอัพโหลดไฟล์หรือไม่
+    if (!req.file) {
+      return res.status(400).json({ message: 'กรุณาอัพโหลดรูปภาพ' });
+    }
 
-    const [result] = await pool.query(
-      'INSERT INTO coffees (name, description, price, category, image) VALUES (?, ?, ?, ?, ?)',
-      [name, description, price, category, imagePath]
-    );
+    const imagePath = req.file.filename;
+    const imageUrl = `/uploads/${imagePath}`;
 
-    // ส่ง response กลับพร้อม URL ที่สมบูรณ์
-    const fullImageUrl = imagePath ? `http://localhost:${process.env.PORT || 5000}${imagePath}` : null;
-    res.status(201).json({ id: result.insertId, ...req.body, image: fullImageUrl });
+    // ตรวจสอบข้อมูลที่จำเป็น
+    if (!name || !description || !price || !category) {
+      return res.status(400).json({
+        message: "กรุณากรอกข้อมูลให้ครบถ้วน"
+      });
+    }
+
+    // เริ่ม transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // เพิ่มข้อมูลกาแฟ
+      const [result] = await connection.query(
+        `INSERT INTO coffees (name, description, price, base_price, category, image, has_options) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [name, description, price, price, category, imageUrl, has_options ? 1 : 0]
+      );
+
+      const coffeeId = result.insertId;
+
+      // ถ้ามีตัวเลือก ให้เพิ่มตัวเลือกทั้งหมด
+      if (has_options && menu_options) {
+        const options = JSON.parse(menu_options);
+        for (const option of options) {
+          await connection.query(
+            `INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) 
+             VALUES (?, ?, ?, ?, ?)`,
+            [coffeeId, option.option_type, option.option_name, option.price_adjustment, option.is_available ? 1 : 0]
+          );
+        }
+      }
+
+      await connection.commit();
+      res.status(201).json({ 
+        id: coffeeId,
+        name,
+        description,
+        price,
+        category,
+        image: `http://localhost:${process.env.PORT || 5000}${imageUrl}`,
+        has_options: has_options ? 1 : 0
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   } catch (error) {
-    res.status(500).json({
-      message: error.message || "Some error occurred while creating the coffee."
-    });
+    console.error('Error creating coffee:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเพิ่มเมนู' });
   }
 };
 
@@ -69,50 +116,77 @@ exports.findOne = async (req, res) => {
 // Update a coffee
 exports.update = async (req, res) => {
   try {
-    const { name, description, price, category } = req.body;
-    let imagePath = null; // Initialize as null
+    const { id } = req.params;
+    const { name, description, price, category, has_options, menu_options } = req.body;
+    
+    // เริ่ม transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-    // ถ้ามีการอัพโหลดรูปใหม่
-    if (req.file) {
-      imagePath = `/uploads/${req.file.filename}`;
-    } else if (req.body.currentImage) {
-      // ถ้าไม่มีการอัพโหลดรูปใหม่ แต่มี currentImage มา (รูปเดิม)
-      // เราจะดึงเฉพาะ path ส่วนหลังจากการ base URL ออกมา
-      const baseUrl = `http://localhost:${process.env.PORT || 5000}`;
-      if (req.body.currentImage.startsWith(baseUrl)) {
-        imagePath = req.body.currentImage.substring(baseUrl.length);
-      } else {
-        imagePath = req.body.currentImage; // กรณีที่ currentImage เป็นแค่ relative path อยู่แล้ว
+    try {
+      // ดึงข้อมูลรูปภาพปัจจุบันจากฐานข้อมูล
+      const [currentCoffee] = await connection.query(
+        'SELECT image FROM coffees WHERE id = ?',
+        [id]
+      );
+
+      // กำหนดค่า imageUrl
+      let imageUrl = currentCoffee[0]?.image;
+      
+      // ถ้ามีการอัพโหลดไฟล์ใหม่
+      if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
       }
-    }
 
-    const [result] = await pool.query(
-      'UPDATE coffees SET name = ?, description = ?, price = ?, category = ?, image = ? WHERE id = ?',
-      [name, description, price, category, imagePath, req.params.id]
-    );
+      // อัพเดทข้อมูลกาแฟ
+      await connection.query(
+        `UPDATE coffees 
+         SET name = ?, description = ?, price = ?, category = ?, image = ?, has_options = ?
+         WHERE id = ?`,
+        [name, description, price, category, imageUrl, has_options ? 1 : 0, id]
+      );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Coffee not found" });
-    }
+      // ลบตัวเลือกเก่าทั้งหมด
+      await connection.query('DELETE FROM menu_options WHERE coffee_id = ?', [id]);
 
-    // ส่ง response กลับพร้อม URL ที่สมบูรณ์
-    const fullImageUrl = imagePath ? `http://localhost:${process.env.PORT || 5000}${imagePath}` : null;
-    res.json({ 
-      message: "Coffee was updated successfully.",
-      coffee: {
-        id: req.params.id,
-        name,
-        description,
-        price,
-        category,
-        image: fullImageUrl
+      // เพิ่มตัวเลือกใหม่ทั้งหมด
+      if (has_options && menu_options) {
+        const options = JSON.parse(menu_options);
+        for (const option of options) {
+          await connection.query(
+            `INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) 
+             VALUES (?, ?, ?, ?, ?)`,
+            [id, option.option_type, option.option_name, option.price_adjustment, option.is_available ? 1 : 0]
+          );
+        }
       }
-    });
+
+      await connection.commit();
+
+      // สร้าง URL แบบเต็มสำหรับรูปภาพ
+      const fullImageUrl = imageUrl ? `http://localhost:${process.env.PORT || 5000}${imageUrl}` : null;
+
+      res.json({ 
+        message: 'อัพเดทเมนูสำเร็จ',
+        coffee: {
+          id,
+          name,
+          description,
+          price,
+          category,
+          image: fullImageUrl,
+          has_options: has_options ? 1 : 0
+        }
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   } catch (error) {
     console.error('Error updating coffee:', error);
-    res.status(500).json({
-      message: error.message || "Error updating coffee with id " + req.params.id
-    });
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัพเดทเมนู' });
   }
 };
 
@@ -123,10 +197,92 @@ exports.delete = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Coffee not found" });
     }
-    res.json({ message: "Coffee was deleted successfully!" });
+    res.json({ message: "Coffee was deleted successfully" });
   } catch (error) {
     res.status(500).json({
       message: error.message || "Error deleting coffee with id " + req.params.id
+    });
+  }
+};
+
+// Get menu options for a coffee
+exports.getMenuOptions = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM menu_options WHERE coffee_id = ? AND is_available = 1',
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Error retrieving menu options"
+    });
+  }
+};
+
+// Add a new menu option
+exports.addMenuOption = async (req, res) => {
+  try {
+    const { option_type, option_name, price_adjustment, is_available } = req.body;
+    const [result] = await pool.query(
+      'INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) VALUES (?, ?, ?, ?, ?)',
+      [req.params.id, option_type, option_name, price_adjustment, is_available ? 1 : 0]
+    );
+    res.status(201).json({
+      id: result.insertId,
+      coffee_id: req.params.id,
+      option_type,
+      option_name,
+      price_adjustment,
+      is_available
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Error adding menu option"
+    });
+  }
+};
+
+// Update a menu option
+exports.updateMenuOption = async (req, res) => {
+  try {
+    const { option_type, option_name, price_adjustment, is_available } = req.body;
+    const [result] = await pool.query(
+      'UPDATE menu_options SET option_type = ?, option_name = ?, price_adjustment = ?, is_available = ? WHERE id = ? AND coffee_id = ?',
+      [option_type, option_name, price_adjustment, is_available ? 1 : 0, req.params.optionId, req.params.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Menu option not found" });
+    }
+    res.json({
+      id: req.params.optionId,
+      coffee_id: req.params.id,
+      option_type,
+      option_name,
+      price_adjustment,
+      is_available
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Error updating menu option"
+    });
+  }
+};
+
+// Delete a menu option
+exports.deleteMenuOption = async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      'DELETE FROM menu_options WHERE id = ? AND coffee_id = ?',
+      [req.params.optionId, req.params.id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Menu option not found" });
+    }
+    res.json({ message: "Menu option was deleted successfully" });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Error deleting menu option"
     });
   }
 }; 
