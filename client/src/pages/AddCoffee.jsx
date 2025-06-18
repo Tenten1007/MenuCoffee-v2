@@ -71,7 +71,7 @@ const AddCoffee = () => {
   });
 
   const [optionTypes, setOptionTypes] = useState([
-    { value: 'temperature', label: 'อุณหภูมิ' },
+    { value: 'menu-type', label: 'ประเภทเมนู' },
     { value: 'sweetness', label: 'ความหวาน' },
     { value: 'toppings', label: 'ท็อปปิ้ง' },
     { value: 'size', label: 'ขนาด' }
@@ -428,19 +428,73 @@ const AddCoffee = () => {
                     }}
                     color="primary"
                   />
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon sx={{ fontSize: 24 }} />}
+                    sx={{
+                      background: 'linear-gradient(135deg, rgba(67,160,71,0.85) 0%, rgba(56,142,60,0.85) 100%)',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '1.1rem',
+                      boxShadow: '0 8px 32px 0 rgba(34,139,34,0.25)',
+                      px: 3,
+                      py: 1.2,
+                      borderRadius: 2.5,
+                      border: '1.5px solid rgba(255,255,255,0.18)',
+                      backdropFilter: 'blur(6px)',
+                      WebkitBackdropFilter: 'blur(6px)',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, rgba(56,142,60,0.95) 0%, rgba(67,160,71,0.95) 100%)',
+                        boxShadow: '0 12px 32px 0 rgba(34,139,34,0.35)',
+                        transform: 'translateY(-2px) scale(1.04)'
+                      }
+                    }}
+                    onClick={() => handleOptionDialogOpen()}
+                  >
+                    เพิ่มตัวเลือก
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ ml: 1, background: '#FFD700', color: '#1a1a1a', fontWeight: 600, boxShadow: 2, '&:hover': { background: '#FFC107' } }}
+                    onClick={() => {
+                      const preset = [
+                        { option_type: 'menu-type', option_name: 'ร้อน', price_adjustment: 0, is_available: true, id: Date.now() + 1 },
+                        { option_type: 'menu-type', option_name: 'เย็น', price_adjustment: 5, is_available: true, id: Date.now() + 2 },
+                        { option_type: 'menu-type', option_name: 'ปั่น', price_adjustment: 10, is_available: true, id: Date.now() + 3 },
+                      ];
+                      setMenuOptions(prev => ([
+                        ...prev,
+                        ...preset.filter(p => !prev.some(opt => opt.option_type === 'menu-type' && opt.option_name === p.option_name))
+                      ]));
+                    }}
+                  >
+                    + ประเภทเมนู (ร้อน/เย็น/ปั่น)
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ ml: 1, background: '#2196F3', color: '#fff', fontWeight: 600, boxShadow: 2, '&:hover': { background: '#1976D2' } }}
+                    onClick={() => {
+                      const preset = [
+                        { option_type: 'sweetness', option_name: 'ไม่หวาน', price_adjustment: 0, is_available: true, id: Date.now() + 11 },
+                        { option_type: 'sweetness', option_name: 'หวานน้อย', price_adjustment: 0, is_available: true, id: Date.now() + 12 },
+                        { option_type: 'sweetness', option_name: 'ปกติ', price_adjustment: 0, is_available: true, id: Date.now() + 13 },
+                        { option_type: 'sweetness', option_name: 'หวานมาก', price_adjustment: 0, is_available: true, id: Date.now() + 14 },
+                      ];
+                      setMenuOptions(prev => ([
+                        ...prev,
+                        ...preset.filter(p => !prev.some(opt => opt.option_type === 'sweetness' && opt.option_name === p.option_name))
+                      ]));
+                    }}
+                  >
+                    + ระดับความหวาน
+                  </Button>
                 </Box>
 
                 {formData.has_options && (
                   <Box sx={{ mt: 2 }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<AddIcon />}
-                      onClick={() => handleOptionDialogOpen()}
-                      sx={{ mb: 2 }}
-                    >
-                      เพิ่มตัวเลือก
-                    </Button>
-
                     <List>
                       {menuOptions.map((option) => (
                         <ListItem

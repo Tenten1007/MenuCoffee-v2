@@ -561,13 +561,24 @@ const Staff = () => {
                             {(Array.isArray(order.items) ? order.items : []).slice(0, 2).map((item, index) => (
                               <ListItem key={index} sx={{ py: 0.5, px: 0, display: 'block' }}>
                                 <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                  <Box>
+                                    <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
+                                      {item.name} (x{item.quantity})
+                                    </Typography>
+                                    {item.selectedOptions && Object.entries(item.selectedOptions).map(([type, option]) => (
+                                      <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                                        - {type === 'temperature' ? 'อุณหภูมิ' :
+                                           type === 'sweetness' ? 'ความหวาน' :
+                                           type === 'toppings' ? 'ท็อปปิ้ง' :
+                                           type === 'size' ? 'ขนาด' : type}: {option.option_name}
+                                        {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                                      </Typography>
+                                    ))}
+                                  </Box>
                                   <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                                    {item.name} (x{item.quantity})
+                                    ฿{(parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)}
                                   </Typography>
                                 </Box>
-                                <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                                  ฿{(parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)}
-                                </Typography>
                               </ListItem>
                             ))}
                             {(Array.isArray(order.items) ? order.items.length : 0) > 2 && (
@@ -713,27 +724,28 @@ const Staff = () => {
                 {(Array.isArray(selectedOrder.items) ? selectedOrder.items : []).map((item, index) => (
                   <ListItem key={index} sx={{ py: 0.5, px: 0, display: 'block' }}>
                     <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
+                          {item.name} (x{item.quantity})
+                        </Typography>
+                        {item.selectedOptions && Object.entries(item.selectedOptions).map(([type, option]) => (
+                          <Typography key={type} component="div" variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                            - {type === 'temperature' ? 'อุณหภูมิ' :
+                               type === 'sweetness' ? 'ความหวาน' :
+                               type === 'toppings' ? 'ท็อปปิ้ง' :
+                               type === 'size' ? 'ขนาด' : type}: {option.option_name}
+                            {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
+                          </Typography>
+                        ))}
+                      </Box>
                       <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                        {item.name} (x{item.quantity})
-                      </Typography>
-                      <Typography component="div" variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                        ฿{(parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)}
+                        ฿{item.totalPrice ? (parseFloat(item.totalPrice) * parseFloat(item.quantity || 0)).toFixed(2) : (parseFloat(item.price || 0) * parseFloat(item.quantity || 0)).toFixed(2)}
                       </Typography>
                     </Box>
                     <Box component="div" sx={{ ml: 2, mt: 0.5 }}>
-                      {item.sweetness && (
+                      {item.note && (
                         <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                          - ความหวาน: {item.sweetness}
-                        </Typography>
-                      )}
-                      {item.temperature && (
-                        <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                          - อุณหภูมิ: {item.temperature}
-                        </Typography>
-                      )}
-                      {item.notes && (
-                        <Typography component="div" variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                          - หมายเหตุ: {item.notes}
+                          - หมายเหตุ: {item.note}
                         </Typography>
                       )}
                     </Box>

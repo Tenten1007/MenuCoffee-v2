@@ -67,7 +67,7 @@ const EditCoffee = () => {
   });
 
   const [optionTypes, setOptionTypes] = useState([
-    { value: 'temperature', label: 'อุณหภูมิ' },
+    { value: 'menu-type', label: 'ประเภทเมนู' },
     { value: 'sweetness', label: 'ความหวาน' },
     { value: 'toppings', label: 'ท็อปปิ้ง' },
     { value: 'size', label: 'ขนาด' }
@@ -369,7 +369,7 @@ const EditCoffee = () => {
           >
             แก้ไขเมนูกาแฟ
           </Typography>
-          <form onSubmit={handleSubmit}>
+          <form id="edit-coffee-form" onSubmit={handleSubmit}>
             <Stack spacing={3}>
               <TextField
                 fullWidth
@@ -568,64 +568,77 @@ const EditCoffee = () => {
                 </Button>
               </Box>
             </Stack>
-            <Box 
-              sx={{ 
-                mt: 4,
-                display: 'flex',
-                gap: 2,
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'center'
-              }}
-            >
-              <Button
-                type="submit"
-                variant="contained"
-                size={isMobile ? "medium" : "large"}
-                disabled={loading}
-                sx={{
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                  color: 'white',
-                  px: { xs: 3, sm: 4 },
-                  py: { xs: 1, sm: 1.5 },
-                  '&:hover': {
-                    background: 'linear-gradient(45deg, #21CBF3 30%, #2196F3 90%)',
-                  },
-                }}
-              >
-                {loading ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/menu')}
-                size={isMobile ? "medium" : "large"}
-                disabled={loading}
-                sx={{
-                  color: 'white',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  px: { xs: 3, sm: 4 },
-                  py: { xs: 1, sm: 1.5 },
-                  '&:hover': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                ยกเลิก
-              </Button>
-            </Box>
           </form>
 
           {/* Menu Options Section */}
           <Box sx={{ mt: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">ตัวเลือกเมนู</Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => handleOptionDialogOpen()}
-              >
-                เพิ่มตัวเลือก
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon sx={{ fontSize: 24 }} />}
+                  sx={{
+                    background: 'linear-gradient(135deg, rgba(67,160,71,0.85) 0%, rgba(56,142,60,0.85) 100%)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    boxShadow: '0 8px 32px 0 rgba(34,139,34,0.25)',
+                    px: 3,
+                    py: 1.2,
+                    borderRadius: 2.5,
+                    border: '1.5px solid rgba(255,255,255,0.18)',
+                    backdropFilter: 'blur(6px)',
+                    WebkitBackdropFilter: 'blur(6px)',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, rgba(56,142,60,0.95) 0%, rgba(67,160,71,0.95) 100%)',
+                      boxShadow: '0 12px 32px 0 rgba(34,139,34,0.35)',
+                      transform: 'translateY(-2px) scale(1.04)'
+                    }
+                  }}
+                  onClick={() => handleOptionDialogOpen()}
+                >
+                  เพิ่มตัวเลือก
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{ background: '#FFD700', color: '#1a1a1a', fontWeight: 600, boxShadow: 2, '&:hover': { background: '#FFC107' } }}
+                  onClick={() => {
+                    const preset = [
+                      { option_type: 'menu-type', option_name: 'ร้อน', price_adjustment: 0, is_available: true, id: Date.now() + 1 },
+                      { option_type: 'menu-type', option_name: 'เย็น', price_adjustment: 5, is_available: true, id: Date.now() + 2 },
+                      { option_type: 'menu-type', option_name: 'ปั่น', price_adjustment: 10, is_available: true, id: Date.now() + 3 },
+                    ];
+                    setMenuOptions(prev => ([
+                      ...prev,
+                      ...preset.filter(p => !prev.some(opt => opt.option_type === 'menu-type' && opt.option_name === p.option_name))
+                    ]));
+                  }}
+                >
+                  + ประเภทเมนู (ร้อน/เย็น/ปั่น)
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{ background: '#2196F3', color: '#fff', fontWeight: 600, boxShadow: 2, '&:hover': { background: '#1976D2' } }}
+                  onClick={() => {
+                    const preset = [
+                      { option_type: 'sweetness', option_name: 'ไม่หวาน', price_adjustment: 0, is_available: true, id: Date.now() + 11 },
+                      { option_type: 'sweetness', option_name: 'หวานน้อย', price_adjustment: 0, is_available: true, id: Date.now() + 12 },
+                      { option_type: 'sweetness', option_name: 'ปกติ', price_adjustment: 0, is_available: true, id: Date.now() + 13 },
+                      { option_type: 'sweetness', option_name: 'หวานมาก', price_adjustment: 0, is_available: true, id: Date.now() + 14 },
+                    ];
+                    setMenuOptions(prev => ([
+                      ...prev,
+                      ...preset.filter(p => !prev.some(opt => opt.option_type === 'sweetness' && opt.option_name === p.option_name))
+                    ]));
+                  }}
+                >
+                  + ระดับความหวาน
+                </Button>
+              </Box>
             </Box>
 
             <List>
@@ -688,13 +701,6 @@ const EditCoffee = () => {
                       ))}
                     </Select>
                   </FormControl>
-                  <Button
-                    size="small"
-                    onClick={() => setOptionTypeDialogOpen(true)}
-                    sx={{ mt: 1 }}
-                  >
-                    + เพิ่มประเภทตัวเลือกใหม่
-                  </Button>
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
@@ -766,6 +772,67 @@ const EditCoffee = () => {
             </DialogActions>
           </Dialog>
         </Paper>
+        <Box sx={{
+          maxWidth: '800px',
+          mx: 'auto',
+          mt: 4,
+          display: 'flex',
+          gap: 2,
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <Button
+            type="submit"
+            variant="contained"
+            size={isMobile ? "medium" : "large"}
+            disabled={loading}
+            sx={{
+              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+              color: 'white',
+              px: { xs: 3, sm: 4 },
+              py: { xs: 1, sm: 1.5 },
+              fontWeight: 700,
+              fontSize: '1.1rem',
+              boxShadow: 3,
+              borderRadius: 2.5,
+              '&:hover': {
+                background: 'linear-gradient(45deg, #21CBF3 30%, #2196F3 90%)',
+                boxShadow: 6,
+              },
+            }}
+            form="edit-coffee-form"
+          >
+            {loading ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/menu')}
+            size={isMobile ? "medium" : "large"}
+            disabled={loading}
+            sx={{
+              background: 'linear-gradient(135deg, rgba(244,67,54,0.85) 0%, rgba(229,57,53,0.85) 100%)',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '1.1rem',
+              boxShadow: '0 8px 32px 0 rgba(244,67,54,0.25)',
+              px: { xs: 3, sm: 4 },
+              py: { xs: 1, sm: 1.5 },
+              borderRadius: 2.5,
+              border: '1.5px solid rgba(255,255,255,0.18)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              transition: 'all 0.2s',
+              '&:hover': {
+                background: 'linear-gradient(135deg, rgba(229,57,53,0.95) 0%, rgba(244,67,54,0.95) 100%)',
+                boxShadow: '0 12px 32px 0 rgba(244,67,54,0.35)',
+                transform: 'translateY(-2px) scale(1.04)'
+              },
+            }}
+          >
+            ยกเลิก
+          </Button>
+        </Box>
       </Container>
     </Box>
   );

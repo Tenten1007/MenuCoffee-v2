@@ -218,8 +218,8 @@ const Home = () => {
           name: item.name,
           price: item.price,
           quantity: item.quantity,
-          sweetness: item.sweetness,
-          temperature: item.temperature,
+          totalPrice: item.totalPrice,
+          selectedOptions: item.selectedOptions,
           note: item.note
         })),
         status: 'รอดำเนินการ'
@@ -250,7 +250,7 @@ const Home = () => {
   };
 
   const calculateTotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cart.reduce((total, item) => total + ((item.totalPrice || item.price) * item.quantity), 0);
   };
 
   const handleStaffLogin = async () => {
@@ -558,7 +558,7 @@ const Home = () => {
                           </Typography>
                         ))}
                         <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                          ฿{item.totalPrice}
+                          ฿{(item.totalPrice || item.price) * item.quantity}
                         </Typography>
                       </Box>
                     }

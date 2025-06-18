@@ -54,12 +54,12 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE TABLE IF NOT EXISTS order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT,
-    name VARCHAR(100) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    quantity INT NOT NULL,
-    sweetness VARCHAR(50),
-    temperature VARCHAR(50),
-    notes TEXT,
+    name VARCHAR(255),
+    price DECIMAL(10,2),
+    quantity INT,
+    total_price DECIMAL(10,2) DEFAULT NULL,
+    selected_options JSON DEFAULT NULL,
+    note TEXT,
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 

@@ -15,61 +15,57 @@ exports.create = async (req, res) => {
       if (!item.price || !item.quantity) {
         throw new Error('ข้อมูลสินค้าไม่ถูกต้อง: ต้องระบุราคาและจำนวน');
       }
-      return sum + (item.price * item.quantity);
+      // ใช้ totalPrice ถ้ามี (รวมตัวเลือกแล้ว) ไม่งั้นใช้ราคาพื้นฐาน
+      const itemPrice = item.totalPrice || item.price;
+      return sum + (itemPrice * item.quantity);
     }, 0);
     
     // Start a transaction
     const connection = await pool.getConnection();
-    try {
-      await connection.beginTransaction();
+    await connection.beginTransaction();
 
-      // Insert the main order into the orders table
+    try {
+      // Insert order
       const [orderResult] = await connection.query(
-        'INSERT INTO orders (customerName, status, total) VALUES (?, ?, ?)',
-        [customerName, 'รอดำเนินการ', total]
+        'INSERT INTO orders (customerName, total, status, created_at) VALUES (?, ?, ?, NOW())',
+        [customerName, total, 'รอดำเนินการ']
       );
+
       const orderId = orderResult.insertId;
 
-      // Insert each item into the order_items table
+      // Insert order items
       for (const item of items) {
         await connection.query(
-          'INSERT INTO order_items (order_id, name, price, quantity, sweetness, temperature, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [orderId, item.name, item.price, item.quantity, item.sweetness, item.temperature, item.note]
+          'INSERT INTO order_items (order_id, name, price, quantity, total_price, selected_options, note) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [
+            orderId,
+            item.name,
+            item.price,
+            item.quantity,
+            item.totalPrice || item.price,
+            JSON.stringify(item.selectedOptions || {}),
+            item.note || null
+          ]
         );
       }
 
       await connection.commit();
-
-      // Fetch the created order with its items for the response
-      const [newOrder] = await connection.query(
-        'SELECT * FROM orders WHERE id = ?',
-        [orderId]
-      );
-      const [newOrderItems] = await connection.query(
-        'SELECT * FROM order_items WHERE order_id = ?',
-        [orderId]
-      );
-
-      const responseOrder = { ...newOrder[0], items: newOrderItems };
-
-      // Emit a Socket.IO event for the new order
-      const io = req.app.get('socketio');
-      io.emit('newOrder', responseOrder);
-
-      console.log('Order created successfully:', responseOrder);
-      res.status(201).json(responseOrder);
-    } catch (transactionError) {
+      res.status(201).json({ 
+        message: 'สร้างออเดอร์สำเร็จ',
+        orderId,
+        total
+      });
+    } catch (error) {
       await connection.rollback();
-      throw transactionError; // Re-throw to be caught by outer catch block
+      throw error;
     } finally {
       connection.release();
     }
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ 
-      message: 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ',
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: 'เกิดข้อผิดพลาดในการสร้างออเดอร์',
+      error: error.message 
     });
   }
 };
@@ -86,10 +82,17 @@ exports.findAll = async (req, res) => {
         'SELECT * FROM order_items WHERE order_id = ?',
         [order.id]
       );
+      // แปลง selected_options เป็น object
+      const parsedItems = items.map(item => ({
+        ...item,
+        selectedOptions: (typeof item.selected_options === 'string' && item.selected_options.trim().startsWith('{'))
+          ? JSON.parse(item.selected_options)
+          : undefined
+      }));
       return {
         ...order,
         orderTime: order.orderTime ? new Date(order.orderTime).toISOString() : null,
-        items: items,
+        items: parsedItems,
         totalAmount: order.total
       };
     }));
@@ -118,11 +121,18 @@ exports.findOne = async (req, res) => {
       'SELECT * FROM order_items WHERE order_id = ?',
       [order.id]
     );
+    // แปลง selected_options เป็น object
+    const parsedItems = items.map(item => ({
+      ...item,
+      selectedOptions: (typeof item.selected_options === 'string' && item.selected_options.trim().startsWith('{'))
+        ? JSON.parse(item.selected_options)
+        : undefined
+    }));
 
     const formattedOrder = {
       ...order,
       orderTime: order.orderTime ? new Date(order.orderTime).toISOString() : null,
-      items: items,
+      items: parsedItems,
       totalAmount: order.total
     };
 
