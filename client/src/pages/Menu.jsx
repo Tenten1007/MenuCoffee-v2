@@ -256,34 +256,40 @@ const Menu = () => {
               }}
             >
               <Card 
-                sx={{ 
-                  width: '100%',
-                  maxWidth: { xs: '100%', sm: 350, md: 400 },
-                  height: '100%',
+                sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  background: 'rgba(255, 255, 255, 0.1)',
+                  width: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
+                  minWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
+                  maxWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
+                  minHeight: { sm: '40vh' },
+                  maxHeight: { sm: '40vh' },
+                  background: 'rgba(255,255,255,0.1)',
                   backdropFilter: 'blur(10px)',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-                  transition: 'all 0.3s ease-in-out',
-                  minHeight: { xs: '320px', sm: '350px' },
+                  borderRadius: '20px',
+                  border: '2px solid rgba(255,215,0,0.13)',
+                  boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18), 0 1.5px 0 0 rgba(255,215,0,0.08)',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  transition: 'transform 0.25s cubic-bezier(.4,2,.3,1), box-shadow 0.25s cubic-bezier(.4,2,.3,1)',
                   '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 8px 40px rgba(0, 0, 0, 0.2)',
-                  }
+                    transform: 'scale(1.035) translateY(-6px)',
+                    boxShadow: '0 12px 32px 0 rgba(255,215,0,0.13), 0 8px 32px 0 rgba(0,0,0,0.25)',
+                    borderColor: 'rgba(255,215,0,0.35)',
+                  },
                 }}
               >
                 <CardMedia
                   component="img"
-                  height={{ xs: '160', sm: '180', md: '220' }}
                   image={coffee.image}
                   alt={coffee.name}
                   sx={{
                     borderTopLeftRadius: '16px',
                     borderTopRightRadius: '16px',
-                    objectFit: 'cover'
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: { xs: '48vw', sm: '36vh', md: '38vh' },
+                    maxHeight: { xs: '56vw', sm: '36vh', md: '38vh' },
                   }}
                 />
                 <CardContent 
