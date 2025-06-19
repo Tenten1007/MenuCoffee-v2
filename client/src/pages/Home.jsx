@@ -49,7 +49,10 @@ import {
   ShoppingCart as CartIcon,
   Person as PersonIcon,
   Search as SearchIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Visibility,
+  VisibilityOff,
+  Lock
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -74,6 +77,7 @@ const Home = () => {
   const [selectedOptions, setSelectedOptions] = useState({});
   const [optionDialogOpen, setOptionDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { isLoggedIn, login } = useAuth();
@@ -927,7 +931,6 @@ const Home = () => {
                   px: { xs: 2, sm: 3 },
                   py: { xs: 1.5, sm: 2 },
                   mb: 2,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
                 }}>
                   <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', letterSpacing: 1 }}>
                     รวมทั้งหมด:
@@ -1001,29 +1004,39 @@ const Home = () => {
         <Dialog
           open={staffLoginOpen}
           onClose={() => setStaffLoginOpen(false)}
-          maxWidth="sm"
+          maxWidth="xs"
           fullWidth
           PaperProps={{
             sx: {
-              background: 'rgba(45,45,45,0.95)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '16px',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(45,45,45,0.82) 100%)',
+              backdropFilter: 'blur(24px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+              border: '2.5px solid rgba(255, 215, 0, 0.25)',
+              borderRadius: '28px',
+              boxShadow: '0 8px 32px 0 rgba(34, 34, 34, 0.25), 0 1.5px 0 0 rgba(255,215,0,0.10)',
               color: 'white',
               m: { xs: '2vw', sm: 0 },
-              maxWidth: { xs: '95vw', sm: '80vw', md: '60vw' }
+              maxWidth: { xs: '95vw', sm: '80vw', md: '60vw' },
+              position: 'relative',
+              overflow: 'hidden',
             }
           }}
         >
-          <DialogTitle sx={{ 
-            color: 'white', 
-            fontWeight: 'bold',
-            fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
-            textAlign: 'center'
-          }}>
+          <DialogTitle
+            sx={{
+              color: '#FFD700',
+              fontWeight: 900,
+              fontSize: { xs: '2.1rem', sm: '2.3rem' },
+              textAlign: 'center',
+              letterSpacing: 1,
+              textShadow: '0 2px 12px rgba(0,0,0,0.22), 0 0px 32px #FFD70044',
+              zIndex: 1,
+              mb: 1
+            }}
+          >
             Staff Login
           </DialogTitle>
-          <DialogContent sx={{ p: { xs: '3vw', sm: '4vw' } }}>
+          <DialogContent sx={{ p: { xs: '3vw', sm: '4vw' }, zIndex: 1 }}>
             <TextField
               autoFocus
               margin="dense"
@@ -1032,76 +1045,112 @@ const Home = () => {
               fullWidth
               value={staffCredentials.username}
               onChange={(e) => setStaffCredentials({ ...staffCredentials, username: e.target.value })}
-              sx={{
-                mb: '2vh',
-                '& .MuiOutlinedInput-root': {
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon sx={{ color: '#FFD700' }} />
+                  </InputAdornment>
+                ),
+                sx: {
                   color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  height: { xs: '6vh', sm: '5vh' },
-                  '& fieldset': { 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    borderRadius: '8px'
-                  },
-                  '&:hover fieldset': { 
-                    borderColor: 'rgba(255,255,255,0.5)' 
-                  },
-                  '&.Mui-focused fieldset': { 
-                    borderColor: 'white' 
-                  },
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
-                },
+                  background: 'linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)',
+                  borderRadius: '16px',
+                  boxShadow: '0 2px 12px 0 rgba(255,215,0,0.08)',
+                  border: '1.5px solid rgba(255,215,0,0.18)',
+                  '& fieldset': { borderColor: 'rgba(255,215,0,0.25)' },
+                  '&:hover fieldset': { borderColor: '#FFD700' },
+                  '&.Mui-focused fieldset': { borderColor: '#FFD700' }
+                }
+              }}
+              InputLabelProps={{
+                sx: { color: '#FFD700', fontWeight: 700 }
+              }}
+              sx={{
+                mb: 3,
                 '& .MuiInputBase-input': {
-                  fontSize: { xs: 'clamp(1rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '1.1rem',
+                  textShadow: '0 1px 8px rgba(0,0,0,0.10)'
                 }
               }}
             />
             <TextField
               margin="dense"
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               fullWidth
               value={staffCredentials.password}
               onChange={(e) => setStaffCredentials({ ...staffCredentials, password: e.target.value })}
-              sx={{
-                '& .MuiOutlinedInput-root': {
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock sx={{ color: '#FFD700' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((show) => !show)}
+                      edge="end"
+                      sx={{ color: '#FFD700' }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+                sx: {
                   color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  height: { xs: '6vh', sm: '5vh' },
-                  '& fieldset': { 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    borderRadius: '8px'
-                  },
-                  '&:hover fieldset': { 
-                    borderColor: 'rgba(255,255,255,0.5)' 
-                  },
-                  '&.Mui-focused fieldset': { 
-                    borderColor: 'white' 
-                  },
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
-                },
+                  background: 'linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)',
+                  borderRadius: '16px',
+                  boxShadow: '0 2px 12px 0 rgba(255,215,0,0.08)',
+                  border: '1.5px solid rgba(255,215,0,0.18)',
+                  '& fieldset': { borderColor: 'rgba(255,215,0,0.25)' },
+                  '&:hover fieldset': { borderColor: '#FFD700' },
+                  '&.Mui-focused fieldset': { borderColor: '#FFD700' }
+                }
+              }}
+              InputLabelProps={{
+                sx: { color: '#FFD700', fontWeight: 700 }
+              }}
+              sx={{
+                mb: 2,
                 '& .MuiInputBase-input': {
-                  fontSize: { xs: 'clamp(1rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '1.1rem',
+                  textShadow: '0 1px 8px rgba(0,0,0,0.10)'
                 }
               }}
             />
           </DialogContent>
-          <DialogActions sx={{ 
-            p: { xs: '3vw', sm: '4vw' },
-            gap: { xs: '1vw', sm: '2vw' }
-          }}>
-            <Button 
-              onClick={() => setStaffLoginOpen(false)} 
-              sx={{ 
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+          <DialogActions
+            sx={{
+              p: { xs: '3vw', sm: '4vw' },
+              gap: 2,
+              justifyContent: 'center',
+              zIndex: 1
+            }}
+          >
+            <Button
+              onClick={() => setStaffLoginOpen(false)}
+              sx={{
+                color: '#FFD700',
+                border: '1.5px solid #FFD700',
+                borderRadius: '12px',
+                fontWeight: 700,
+                px: 3,
+                py: 1,
+                background: 'rgba(255,255,255,0.10)',
+                boxShadow: '0 2px 8px 0 rgba(255,215,0,0.08)',
+                backdropFilter: 'blur(2px)',
+                transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
+                '&:hover': {
+                  background: 'rgba(255,255,255,0.18)',
+                  borderColor: '#FFA000',
+                  color: '#FFA000',
+                  transform: 'scale(1.04)'
+                }
               }}
             >
               Cancel
@@ -1110,14 +1159,21 @@ const Home = () => {
               onClick={handleStaffLogin}
               variant="contained"
               sx={{
-                background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
+                background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
                 color: '#1a1a1a',
-                fontWeight: 600,
-                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
-                minHeight: { xs: '5vh', sm: '4.5vh' },
-                borderRadius: '8px',
+                fontWeight: 900,
+                fontSize: '1.1rem',
+                borderRadius: '12px',
+                px: 4,
+                py: 1.2,
+                boxShadow: '0 4px 24px 0 rgba(255,215,0,0.18)',
+                letterSpacing: 1,
+                transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
                 '&:hover': {
-                  background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
+                  background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)',
+                  color: '#222',
+                  transform: 'scale(1.04)',
+                  boxShadow: '0 8px 32px 0 rgba(255,215,0,0.22)'
                 }
               }}
             >
