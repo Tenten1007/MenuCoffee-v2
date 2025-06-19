@@ -523,25 +523,30 @@ const Home = () => {
                 key={coffee.id}
                 sx={{
                   display: 'flex',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  alignItems: 'stretch',
                 }}
               >
                 <Card
                   sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    width: '100%',
-                    maxWidth: { xs: '90vw', sm: '40vw', md: '30vw', lg: '25vw' },
-                    height: { xs: '46vh', sm: '50vh' },
-                    minHeight: { xs: '46vh', sm: '50vh' },
-                    maxHeight: { xs: '46vh', sm: '50vh' },
-                    background: 'rgba(255,255,255,0.1)',
-                    borderRadius: '16px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    width: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
+                    minWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
+                    maxWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
+                    minHeight: { sm: '40vh' },
+                    maxHeight: { sm: '40vh' },
+                    background: 'rgba(30,30,30,0.95)',
+                    borderRadius: '20px',
+                    border: '2px solid rgba(255,215,0,0.13)',
+                    boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18), 0 1.5px 0 0 rgba(255,215,0,0.08)',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    transition: 'transform 0.25s cubic-bezier(.4,2,.3,1), box-shadow 0.25s cubic-bezier(.4,2,.3,1)',
                     '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+                      transform: 'scale(1.035) translateY(-6px)',
+                      boxShadow: '0 12px 32px 0 rgba(255,215,0,0.13), 0 8px 32px 0 rgba(0,0,0,0.25)',
+                      borderColor: 'rgba(255,215,0,0.35)',
                     },
                   }}
                 >
@@ -550,21 +555,38 @@ const Home = () => {
                     image={coffee.image}
                     alt={coffee.name}
                     sx={{
-                      height: { xs: '20vh', sm: '22vh', md: '24vh' },
+                      width: '100%',
+                      height: { xs: '48vw', sm: '36vh', md: '38vh' },
+                      maxHeight: { xs: '56vw', sm: '36vh', md: '38vh' },
                       objectFit: 'cover',
-                      borderTopLeftRadius: '16px',
-                      borderTopRightRadius: '16px',
-                      width: '100%'
+                      borderTopLeftRadius: '20px',
+                      borderTopRightRadius: '20px',
+                      display: 'block',
+                      position: 'relative',
                     }}
                   />
+                  {/* Overlay gradient for image */}
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: { xs: '48vw', sm: '36vh', md: '38vh' },
+                    pointerEvents: 'none',
+                    borderTopLeftRadius: '20px',
+                    borderTopRightRadius: '20px',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.01) 60%, rgba(30,30,30,0.45) 100%)',
+                  }} />
                   <CardContent
                     sx={{
                       flex: 1,
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      p: { xs: '2vw', sm: '2.5vw' },
-                      width: '100%'
+                      p: { xs: 2, sm: 3 },
+                      width: '100%',
+                      background: 'none',
+                      pb: { xs: 3.5, sm: 4 },
                     }}
                   >
                     <Box sx={{ flex: 1, minHeight: { xs: '10vh', sm: '12vh' }, display: 'flex', flexDirection: 'column' }}>
@@ -573,16 +595,18 @@ const Home = () => {
                         variant="h6"
                         component="div"
                         sx={{
-                          color: 'white',
-                          fontWeight: 'bold',
-                          fontSize: { xs: 'clamp(1rem, 3.5vw, 1.3rem)', sm: 'clamp(1.1rem, 2.5vw, 1.3rem)' },
-                          lineHeight: 1.2,
+                          color: '#FFD700',
+                          fontWeight: 700,
+                          fontSize: { xs: 'clamp(1.1rem, 4vw, 1.4rem)', sm: 'clamp(1.2rem, 2.8vw, 1.4rem)' },
+                          lineHeight: 1.18,
                           mb: '1vh',
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
-                          minHeight: { xs: '3vh', sm: '3.5vh' }
+                          minHeight: { xs: '3vh', sm: '3.5vh' },
+                          letterSpacing: 0.5,
+                          textShadow: '0 2px 8px rgba(0,0,0,0.18)'
                         }}
                       >
                         {coffee.name}
@@ -590,15 +614,16 @@ const Home = () => {
                       <Typography
                         variant="body2"
                         sx={{
-                          color: 'rgba(255,255,255,0.7)',
-                          fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
-                          lineHeight: 1.4,
+                          color: 'rgba(255,255,255,0.82)',
+                          fontSize: { xs: 'clamp(0.92rem, 2.5vw, 1.05rem)', sm: 'clamp(0.95rem, 2vw, 1.08rem)' },
+                          lineHeight: 1.5,
                           mb: '2vh',
                           display: '-webkit-box',
                           WebkitLineClamp: 3,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
-                          minHeight: { xs: '4vh', sm: '4.5vh' }
+                          minHeight: { xs: '4vh', sm: '4.5vh' },
+                          textShadow: '0 1px 6px rgba(0,0,0,0.13)'
                         }}
                       >
                         {coffee.description}
@@ -608,18 +633,23 @@ const Home = () => {
                       sx={{
                         width: '100%',
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-end',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: { xs: '2vh', sm: '32px' },
                         mt: 'auto',
-                        pt: 1
+                        pt: 1,
+                        pb: { xs: 1, sm: 1.5 },
                       }}
                     >
                       <Typography
                         variant="h6"
                         sx={{
                           color: '#FFD700',
-                          fontWeight: 'bold',
-                          fontSize: { xs: 'clamp(1rem, 3.5vw, 1.3rem)', sm: 'clamp(1.1rem, 2.5vw, 1.3rem)' }
+                          fontWeight: 700,
+                          fontSize: { xs: 'clamp(1.15rem, 4vw, 1.35rem)', sm: 'clamp(1.18rem, 2.8vw, 1.35rem)' },
+                          letterSpacing: 0.5,
+                          textShadow: '0 2px 8px rgba(0,0,0,0.18)'
                         }}
                       >
                         ฿{coffee.price}
@@ -629,15 +659,25 @@ const Home = () => {
                         startIcon={<AddIcon />}
                         onClick={() => handleAddToCart(coffee)}
                         sx={{
-                          background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
+                          background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
                           color: '#1a1a1a',
-                          fontWeight: 600,
-                          fontSize: { xs: 'clamp(0.7rem, 2.5vw, 0.9rem)', sm: 'clamp(0.8rem, 2vw, 0.9rem)' },
-                          minHeight: { xs: '5vh', sm: '4.5vh' },
+                          fontWeight: 700,
+                          fontSize: { xs: 'clamp(1.05rem, 3vw, 1.15rem)', sm: 'clamp(1.08rem, 2vw, 1.15rem)' },
+                          minHeight: { xs: '5.5vh', sm: '4.8vh' },
                           borderRadius: '12px',
-                          px: { xs: '2vw', sm: '3vw' },
+                          px: { xs: 0, sm: '2vw' },
+                          width: { xs: '90%', sm: 'auto' },
+                          alignSelf: 'center',
+                          boxShadow: '0 4px 16px 0 rgba(255,215,0,0.22)',
+                          letterSpacing: 0.5,
+                          transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
+                          mt: { xs: 1.5, sm: 0 },
+                          mb: { xs: 1.2, sm: 1.2 },
                           '&:hover': {
-                            background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
+                            background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)',
+                            color: '#222',
+                            transform: 'scale(1.04)',
+                            boxShadow: '0 6px 24px 0 rgba(255,215,0,0.28)',
                           }
                         }}
                       >
