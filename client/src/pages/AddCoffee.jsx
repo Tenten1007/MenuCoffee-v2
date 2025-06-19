@@ -39,6 +39,7 @@ import {
   Straighten
 } from '@mui/icons-material';
 import Navbar, { NAVBAR_HEIGHT } from '../components/Navbar';
+import { useAuth } from '../contexts/AuthContext';
 
 const categories = [
   { value: 'recommended', label: 'เมนูแนะนำ' },
@@ -85,6 +86,8 @@ const AddCoffee = () => {
 
   const [newOptionType, setNewOptionType] = useState({ value: '', label: '' });
   const [optionTypeDialogOpen, setOptionTypeDialogOpen] = useState(false);
+
+  const { token } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -206,6 +209,7 @@ const AddCoffee = () => {
       const response = await axios.post('http://localhost:5000/api/coffees', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
         },
       });
 

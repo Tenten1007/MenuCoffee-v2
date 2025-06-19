@@ -289,6 +289,7 @@ const Navbar = () => {
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': { 
             boxSizing: 'border-box', 
+            paddingTop: '10vh',
             width: 250,
             backgroundColor: 'background.paper',
             borderRight: '1px solid rgba(255, 255, 255, 0.12)'

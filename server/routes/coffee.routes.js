@@ -4,6 +4,7 @@ const coffeeController = require('../controllers/coffee.controller');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const staffAuth = require('../middleware/staffAuth');
 
 // กำหนด path ของโฟลเดอร์ uploads
 const uploadsDir = path.join(__dirname, '..', 'uploads');
@@ -23,10 +24,22 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage: storage });
+const filetypes = /jpeg|jpg|png|gif/;
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb('Error: Images Only!');
+  }
+});
 
 // Create a new coffee
-router.post('/', upload.single('image'), coffeeController.create);
+router.post('/', staffAuth, upload.single('image'), coffeeController.create);
 
 // Get all coffees
 router.get('/', coffeeController.findAll);
@@ -35,21 +48,21 @@ router.get('/', coffeeController.findAll);
 router.get('/:id', coffeeController.findOne);
 
 // Update a coffee with id
-router.put('/:id', upload.single('image'), coffeeController.update);
+router.put('/:id', staffAuth, upload.single('image'), coffeeController.update);
 
 // Delete a coffee with id
-router.delete('/:id', coffeeController.delete);
+router.delete('/:id', staffAuth, coffeeController.delete);
 
 // Get menu options for a coffee
 router.get('/:id/options', coffeeController.getMenuOptions);
 
 // Add a new menu option
-router.post('/:id/options', coffeeController.addMenuOption);
+router.post('/:id/options', staffAuth, coffeeController.addMenuOption);
 
 // Update a menu option
-router.put('/:id/options/:optionId', coffeeController.updateMenuOption);
+router.put('/:id/options/:optionId', staffAuth, coffeeController.updateMenuOption);
 
 // Delete a menu option
-router.delete('/:id/options/:optionId', coffeeController.deleteMenuOption);
+router.delete('/:id/options/:optionId', staffAuth, coffeeController.deleteMenuOption);
 
 module.exports = router; 

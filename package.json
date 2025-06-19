@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "express-rate-limit": "^7.5.0",
     "multer": "^2.0.1"
   },
   "scripts": {

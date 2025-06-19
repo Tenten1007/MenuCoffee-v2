@@ -41,6 +41,7 @@ import {
   Straighten
 } from '@mui/icons-material';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 const EditCoffee = () => {
   const { id } = useParams();
@@ -48,6 +49,7 @@ const EditCoffee = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const { token } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -189,6 +191,7 @@ const EditCoffee = () => {
       await axios.put(`http://localhost:5000/api/coffees/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
         },
       });
       navigate('/menu');

@@ -65,17 +65,24 @@ exports.addOption = async (req, res) => {
   try {
     const { category, option_type, option_value, is_default } = req.body;
     
+    if (!category || typeof category !== 'string' || !option_type || typeof option_type !== 'string' || !option_value || typeof option_value !== 'string') {
+      return res.status(400).json({ message: 'ข้อมูลไม่ถูกต้อง' });
+    }
+    const safeCategory = category.trim();
+    const safeType = option_type.trim();
+    const safeValue = option_value.trim();
+    
     // ถ้าเป็นค่าเริ่มต้น ให้รีเซ็ตค่าเริ่มต้นของตัวเลือกอื่นๆ ในประเภทเดียวกัน
     if (is_default) {
       await pool.query(
         'UPDATE menu_options SET is_default = false WHERE category = ? AND option_type = ?',
-        [category, option_type]
+        [safeCategory, safeType]
       );
     }
 
     const [result] = await pool.query(
       'INSERT INTO menu_options (category, option_type, option_value, is_default) VALUES (?, ?, ?, ?)',
-      [category, option_type, option_value, is_default]
+      [safeCategory, safeType, safeValue, is_default]
     );
 
     res.status(201).json({ id: result.insertId, ...req.body });
@@ -91,17 +98,24 @@ exports.updateOption = async (req, res) => {
     const { id } = req.params;
     const { category, option_type, option_value, is_default } = req.body;
 
+    if (!category || typeof category !== 'string' || !option_type || typeof option_type !== 'string' || !option_value || typeof option_value !== 'string') {
+      return res.status(400).json({ message: 'ข้อมูลไม่ถูกต้อง' });
+    }
+    const safeCategory = category.trim();
+    const safeType = option_type.trim();
+    const safeValue = option_value.trim();
+
     // ถ้าเป็นค่าเริ่มต้น ให้รีเซ็ตค่าเริ่มต้นของตัวเลือกอื่นๆ ในประเภทเดียวกัน
     if (is_default) {
       await pool.query(
         'UPDATE menu_options SET is_default = false WHERE category = ? AND option_type = ? AND id != ?',
-        [category, option_type, id]
+        [safeCategory, safeType, id]
       );
     }
 
     await pool.query(
       'UPDATE menu_options SET category = ?, option_type = ?, option_value = ?, is_default = ? WHERE id = ?',
-      [category, option_type, option_value, is_default, id]
+      [safeCategory, safeType, safeValue, is_default, id]
     );
 
     res.json({ id, ...req.body });

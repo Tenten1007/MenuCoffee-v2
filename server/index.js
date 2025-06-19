@@ -9,6 +9,7 @@ const { Server } = require('socket.io');
 const { createInitialStaff } = require('./controllers/staff.controller');
 const staffController = require('./controllers/staff.controller');
 const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
@@ -27,6 +28,29 @@ app.set('socketio', io);
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// CORS config
+const allowedOrigins = [process.env.CLIENT_ORIGIN || 'http://localhost:5173'];
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
+// Rate limit config (100 requests/15min per IP)
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api/', apiLimiter);
 
 // กำหนด path ของโฟลเดอร์ uploads
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -146,4 +170,16 @@ initializeDatabase()
 
 httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-}); 
+});
+
+// --- HTTPS Example (for production) ---
+// const https = require('https');
+// const fs = require('fs');
+// const privateKey = fs.readFileSync('/path/to/privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('/path/to/fullchain.pem', 'utf8');
+// const credentials = { key: privateKey, cert: certificate };
+// const httpsServer = https.createServer(credentials, app);
+// httpsServer.listen(process.env.PORT || 5000, () => {
+//   console.log('HTTPS Server running on port ' + (process.env.PORT || 5000));
+// });
+// --- End HTTPS Example --- 

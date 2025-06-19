@@ -26,16 +26,19 @@ exports.create = async (req, res) => {
     const imageUrl = `/uploads/${imagePath}`;
 
     // ตรวจสอบข้อมูลที่จำเป็น
-    if (!name || !price || !category) {
+    if (!name || typeof name !== 'string' || !price || isNaN(Number(price)) || !category || typeof category !== 'string') {
       return res.status(400).json({
-        message: "กรุณากรอกข้อมูลให้ครบถ้วน"
+        message: "กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง"
       });
     }
+    // sanitize
+    const safeName = name.trim();
+    const safeCategory = category.trim();
 
     // เช็คชื่อเมนูซ้ำ
     const connection = await pool.getConnection();
     try {
-      const [dup] = await connection.query('SELECT id FROM coffees WHERE name = ?', [name]);
+      const [dup] = await connection.query('SELECT id FROM coffees WHERE name = ?', [safeName]);
       if (dup.length > 0) {
         connection.release();
         return res.status(409).json({ message: 'มีเมนูนี้อยู่แล้ว กรุณาตั้งชื่อใหม่' });
@@ -53,19 +56,25 @@ exports.create = async (req, res) => {
       const [result] = await connection.query(
         `INSERT INTO coffees (name, price, base_price, category, image, has_options) 
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [name, price, price, category, imageUrl, has_options ? 1 : 0]
+        [safeName, price, price, safeCategory, imageUrl, has_options ? 1 : 0]
       );
 
       const coffeeId = result.insertId;
 
       // ถ้ามีตัวเลือก ให้เพิ่มตัวเลือกทั้งหมด
       if (has_options && menu_options) {
-        const options = JSON.parse(menu_options);
+        let options;
+        try {
+          options = typeof menu_options === 'string' ? JSON.parse(menu_options) : menu_options;
+        } catch (e) {
+          return res.status(400).json({ message: 'รูปแบบตัวเลือกไม่ถูกต้อง' });
+        }
         for (const option of options) {
+          if (!option.option_type || !option.option_name) continue;
           await connection.query(
             `INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) 
              VALUES (?, ?, ?, ?, ?)`,
-            [coffeeId, option.option_type, option.option_name, option.price_adjustment, option.is_available ? 1 : 0]
+            [coffeeId, option.option_type.trim(), option.option_name.trim(), Number(option.price_adjustment) || 0, option.is_available ? 1 : 0]
           );
         }
       }
@@ -73,9 +82,9 @@ exports.create = async (req, res) => {
       await connection.commit();
       res.status(201).json({ 
         id: coffeeId,
-        name,
+        name: safeName,
         price,
-        category,
+        category: safeCategory,
         image: `http://localhost:${process.env.PORT || 5000}${imageUrl}`,
         has_options: has_options ? 1 : 0
       });
@@ -149,12 +158,16 @@ exports.update = async (req, res) => {
         imageUrl = `/uploads/${req.file.filename}`;
       }
 
+      // sanitize
+      const safeName = name && typeof name === 'string' ? name.trim() : '';
+      const safeCategory = category && typeof category === 'string' ? category.trim() : '';
+
       // อัพเดทข้อมูลกาแฟ
       await connection.query(
         `UPDATE coffees 
          SET name = ?, price = ?, category = ?, image = ?, has_options = ?
          WHERE id = ?`,
-        [name, price, category, imageUrl, has_options ? 1 : 0, id]
+        [safeName, price, safeCategory, imageUrl, has_options ? 1 : 0, id]
       );
 
       // ลบตัวเลือกเก่าทั้งหมด
@@ -162,12 +175,18 @@ exports.update = async (req, res) => {
 
       // เพิ่มตัวเลือกใหม่ทั้งหมด
       if (has_options && menu_options) {
-        const options = JSON.parse(menu_options);
+        let options;
+        try {
+          options = typeof menu_options === 'string' ? JSON.parse(menu_options) : menu_options;
+        } catch (e) {
+          return res.status(400).json({ message: 'รูปแบบตัวเลือกไม่ถูกต้อง' });
+        }
         for (const option of options) {
+          if (!option.option_type || !option.option_name) continue;
           await connection.query(
             `INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) 
              VALUES (?, ?, ?, ?, ?)`,
-            [id, option.option_type, option.option_name, option.price_adjustment, option.is_available ? 1 : 0]
+            [id, option.option_type.trim(), option.option_name.trim(), Number(option.price_adjustment) || 0, option.is_available ? 1 : 0]
           );
         }
       }
@@ -181,9 +200,9 @@ exports.update = async (req, res) => {
         message: 'อัพเดทเมนูสำเร็จ',
         coffee: {
           id,
-          name,
+          name: safeName,
           price,
-          category,
+          category: safeCategory,
           image: fullImageUrl,
           has_options: has_options ? 1 : 0
         }
