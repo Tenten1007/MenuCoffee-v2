@@ -48,12 +48,14 @@ import {
   Visibility as VisibilityIcon,
   MenuBook as MenuBookIcon,
   Logout as LogoutIcon,
-  History as HistoryIcon
+  History as HistoryIcon,
+  AttachMoney as AttachMoneyIcon
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import io from 'socket.io-client';
+import Navbar from '../components/Navbar';
 
 const Staff = () => {
   const [orders, setOrders] = useState([]);
@@ -270,303 +272,387 @@ const Staff = () => {
   };
 
   const filteredOrders = orders.filter(order => {
-    if (currentTab === 0) return order.status === 'pending';
-    if (currentTab === 1) return order.status === 'preparing';
-    if (currentTab === 2) return order.status === 'completed';
-    if (currentTab === 3) return order.status === 'cancelled';
+    const status = (order.status || '').toLowerCase();
+    if (currentTab === 0) return status === 'pending' || status === 'รอดำเนินการ';
+    if (currentTab === 1) return status === 'preparing' || status === 'กำลังทำ';
+    if (currentTab === 2) return status === 'completed' || status === 'เสร็จสิ้น';
+    if (currentTab === 3) return status === 'cancelled' || status === 'ยกเลิก';
     return false;
   }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-        py: { xs: 2, sm: 3, md: 4 },
-        px: { xs: 1, sm: 2, md: 3 },
-        position: 'relative',
-        overflowX: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-          pointerEvents: 'none',
-        }
-      }}
-    >
-      <Container 
-        maxWidth={false} 
-        sx={{ 
+    <>
+      <Navbar />
+      <Box
+        sx={{
+          width: '100%',
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          pt: '15vh',
+          pb: { xs: 2, sm: 3, md: 4 },
+          px: { xs: 1, sm: 2, md: 3 },
           position: 'relative',
-          zIndex: 1
+          overflowX: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+            pointerEvents: 'none',
+          }
         }}
       >
-        {/* Header */}
-        <Box 
+        <Container 
+          maxWidth={false} 
           sx={{ 
-            mb: { xs: 2, sm: 3, md: 4 },
-            textAlign: { xs: 'center', sm: 'left' }
+            position: 'relative',
+            zIndex: 1
           }}
         >
-          <Typography 
-            variant="h4" 
-            component="h1" 
-            gutterBottom 
+          {/* Header */}
+          <Box 
             sx={{ 
-              color: 'white',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
-              mb: { xs: 1, sm: 2 }
+              mb: { xs: 2, sm: 3, md: 4 },
+              textAlign: { xs: 'center', sm: 'left' }
             }}
           >
-            จัดการคำสั่งซื้อ
-          </Typography>
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'center', sm: 'flex-start' },
-            gap: { xs: 1, sm: 2 },
-            justifyContent: { xs: 'center', sm: 'space-between' }
-          }}>
             <Typography 
-              variant="subtitle1" 
+              variant="h4" 
+              component="h1" 
+              gutterBottom 
               sx={{ 
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: { xs: '0.875rem', sm: '1rem' }
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
+                mb: { xs: 1, sm: 2 }
               }}
             >
-              จำนวนคำสั่งซื้อทั้งหมด: {orders.length}
+              จัดการคำสั่งซื้อ
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                startIcon={<RefreshIcon />}
-                onClick={fetchOrders}
-                sx={{
-                  color: 'white',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                  minHeight: { xs: '36px', sm: '40px' },
-                  '&:hover': {
-                    borderColor: 'white',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  }
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'center', sm: 'flex-start' },
+              gap: { xs: 1, sm: 2 },
+              justifyContent: { xs: 'center', sm: 'space-between' }
+            }}>
+              <Typography 
+                variant="subtitle1" 
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
                 }}
               >
-                {!isMobile && 'รีเฟรช'}
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<LogoutIcon />}
-                onClick={handleLogout}
-                sx={{
-                  color: 'white',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                  minHeight: { xs: '36px', sm: '40px' },
-                  '&:hover': {
-                    borderColor: 'white',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  }
-                }}
-              >
-                {!isMobile && 'ออกจากระบบ'}
-              </Button>
+                จำนวนคำสั่งซื้อทั้งหมด: {orders.length}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<RefreshIcon />}
+                  onClick={fetchOrders}
+                  sx={{
+                    color: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    minHeight: { xs: '36px', sm: '40px' },
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    }
+                  }}
+                >
+                  {!isMobile && 'รีเฟรช'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<LogoutIcon />}
+                  onClick={handleLogout}
+                  sx={{
+                    color: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    minHeight: { xs: '36px', sm: '40px' },
+                    '&:hover': {
+                      borderColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    }
+                  }}
+                >
+                  {!isMobile && 'ออกจากระบบ'}
+                </Button>
+              </Box>
             </Box>
           </Box>
-        </Box>
 
-        {/* Tabs */}
-        <Paper
-          sx={{
-            background: 'rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '16px',
-            border: '1px solid rgba(255,255,255,0.1)',
-            overflowX: 'auto',
-            mb: { xs: 2, sm: 3, md: 4 },
-            width: '100%'
-          }}
-        >
-          <Tabs
-            value={currentTab}
-            onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
+          {/* Tabs */}
+          <Paper
             sx={{
-              '& .MuiTab-root': {
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                minWidth: { xs: '80px', sm: 'auto' },
-                '&.Mui-selected': {
-                  color: 'white',
-                  fontWeight: 'bold'
-                },
-              },
-              '& .MuiTabs-indicator': {
-                backgroundColor: 'white',
-              },
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.1)',
+              overflowX: 'auto',
+              mb: { xs: 2, sm: 3, md: 4 },
+              width: '100%'
             }}
           >
-            <Tab label="รอดำเนินการ" />
-            <Tab label="กำลังทำ" />
-            <Tab label="เสร็จสิ้น" />
-            <Tab label="ยกเลิก" />
-          </Tabs>
-        </Paper>
-
-        {/* Orders Grid */}
-        <Grid 
-          container 
-          spacing={{ xs: 2, sm: 3, md: 4 }}
-          columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
-          sx={{
-            justifyContent: 'center'
-          }}
-        >
-          {filteredOrders.map((order) => (
-            <Grid 
-              item 
-              xs={1}
-              key={order.id}
-            >
-              <Card
-                sx={{
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+            <Tabs
+              value={currentTab}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                '& .MuiTab-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  minWidth: { xs: '80px', sm: 'auto' },
+                  '&.Mui-selected': {
+                    color: 'white',
+                    fontWeight: 'bold'
                   },
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: { xs: '280px', sm: '320px' }
-                }}
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: 'white',
+                },
+              }}
+            >
+              <Tab label="รอดำเนินการ" />
+              <Tab label="กำลังทำ" />
+              <Tab label="เสร็จสิ้น" />
+              <Tab label="ยกเลิก" />
+            </Tabs>
+          </Paper>
+
+          {/* Orders Grid */}
+          <Grid 
+            container 
+            spacing={{ xs: 2, sm: 3, md: 4 }}
+            columns={{ xs: 1, sm: 2, md: 3, lg: 4 }}
+            sx={{
+              justifyContent: 'center'
+            }}
+          >
+            {filteredOrders.map((order) => (
+              <Grid 
+                item 
+                xs={1}
+                key={order.id}
               >
-                <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2 } }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                <Card
+                  sx={{
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+                    },
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: { xs: '280px', sm: '320px' }
+                  }}
+                >
+                  <CardContent sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2 } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          color: 'white', 
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.9rem', sm: '1rem' },
+                          lineHeight: 1.2
+                        }}
+                      >
+                        #{order.id}
+                      </Typography>
+                      <Chip
+                        icon={getStatusIcon(order.status)}
+                        label={getStatusText(order.status)}
+                        size={isMobile ? "small" : "medium"}
+                        sx={{
+                          backgroundColor: getStatusColor(order.status),
+                          color: 'white',
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          height: { xs: '24px', sm: '28px' }
+                        }}
+                      />
+                    </Box>
+                    
                     <Typography 
-                      variant="h6" 
+                      variant="body2" 
                       sx={{ 
-                        color: 'white', 
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.9rem', sm: '1rem' },
-                        lineHeight: 1.2
+                        color: 'rgba(255,255,255,0.7)',
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        mb: 1
                       }}
                     >
-                      #{order.id}
+                      {order.customer_name}
                     </Typography>
-                    <Chip
-                      icon={getStatusIcon(order.status)}
-                      label={getStatusText(order.status)}
-                      size={isMobile ? "small" : "medium"}
-                      sx={{
-                        backgroundColor: getStatusColor(order.status),
-                        color: 'white',
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                        height: { xs: '24px', sm: '28px' }
-                      }}
-                    />
-                  </Box>
-                  
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.7)',
-                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                      mb: 1
-                    }}
-                  >
-                    {order.customer_name}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.7)',
-                      fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                      mb: 1
-                    }}
-                  >
-                    {formatTime(order.created_at)}
-                  </Typography>
-                  
-                  <Box sx={{ mb: 1 }}>
-                    {order.items && order.items.slice(0, 2).map((item, index) => (
-                      <Typography 
-                        key={index} 
-                        variant="body2" 
-                        sx={{ 
-                          color: 'rgba(255,255,255,0.8)',
-                          fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                          lineHeight: 1.3
-                        }}
-                      >
-                        • {item.name} x{item.quantity}
-                      </Typography>
-                    ))}
-                    {order.items && order.items.length > 2 && (
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          color: 'rgba(255,255,255,0.6)',
-                          fontSize: { xs: '0.7rem', sm: '0.75rem' }
-                        }}
-                      >
-                        และอีก {order.items.length - 2} รายการ
-                      </Typography>
-                    )}
-                  </Box>
-                  
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      color: '#FFD700', 
-                      fontWeight: 'bold',
-                      fontSize: { xs: '0.9rem', sm: '1rem' }
-                    }}
-                  >
-                    ฿{order.total_amount}
-                  </Typography>
-                </CardContent>
-                
-                <CardActions sx={{ 
-                  justifyContent: 'center', 
-                  p: { xs: 1, sm: 1.5 },
-                  gap: 1
-                }}>
-                  <Tooltip title="ดูรายละเอียด">
-                    <IconButton
-                      onClick={() => handleViewDetails(order)}
-                      sx={{
-                        color: 'white',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        minWidth: { xs: '36px', sm: '40px' },
-                        minHeight: { xs: '36px', sm: '40px' },
-                        '&:hover': {
-                          background: 'rgba(255, 255, 255, 0.2)',
-                        }
+                    
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'rgba(255,255,255,0.7)',
+                        fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                        mb: 1
                       }}
                     >
-                      <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
-                    </IconButton>
-                  </Tooltip>
+                      {formatTime(order.created_at)}
+                    </Typography>
+                    
+                    <Box sx={{ mb: 1 }}>
+                      {order.items && order.items.map((item, index) => {
+                        const options = item.selectedOptions || item.selected_options;
+                        return (
+                          <Paper
+                            key={index}
+                            elevation={0}
+                            sx={{
+                              bgcolor: 'rgba(255,255,255,0.08)',
+                              borderRadius: 2,
+                              p: 1,
+                              mb: 1,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 0.5
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <CoffeeIcon fontSize="small" sx={{ color: '#FFD700' }} />
+                              <Typography sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                                {item.name}
+                              </Typography>
+                              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem' }}>
+                                x{item.quantity}
+                              </Typography>
+                            </Box>
+                            {/* ตัวเลือกเพิ่มเติม */}
+                            {options && Object.keys(options).length > 0 && (
+                              <Box sx={{ ml: 3, mt: 0.5 }}>
+                                <Typography sx={{ color: '#90caf9', fontSize: '0.9rem', fontWeight: 500 }}>
+                                  ตัวเลือกเพิ่มเติม:
+                                </Typography>
+                                {Object.entries(options).map(([key, option], idx) => {
+                                  let detail = option.option_name || option.name || option;
+                                  if ((option.price_adjustment && option.price_adjustment !== '0.00') || (option.price && option.price !== '0.00')) {
+                                    const price = option.price_adjustment || option.price;
+                                    detail += ` (+${parseFloat(price).toFixed(2)} บาท)`;
+                                  }
+                                  if (option.detail) {
+                                    detail += ` (${option.detail})`;
+                                  }
+                                  return (
+                                    <Typography key={idx} sx={{ color: '#90caf9', fontSize: '0.9rem', ml: 2 }}>
+                                      - {key}: {detail}
+                                    </Typography>
+                                  );
+                                })}
+                              </Box>
+                            )}
+                            {/* หมายเหตุ */}
+                            {item.note && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 3 }}>
+                                <ErrorIcon fontSize="small" sx={{ color: '#ff7043' }} />
+                                <Typography sx={{ color: '#ff7043', fontSize: '0.9rem' }}>
+                                  หมายเหตุ: {item.note}
+                                </Typography>
+                              </Box>
+                            )}
+                            {/* ราคาพื้นฐานของเมนู */}
+                            {item.price && (
+                              <Typography sx={{ color: '#FFD700', fontSize: '0.95rem', fontWeight: 500, ml: 3 }}>
+                                ราคา: {parseFloat(item.price).toFixed(2)} บาท
+                              </Typography>
+                            )}
+                          </Paper>
+                        );
+                      })}
+                    </Box>
+                    
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: '#FFD700',
+                        fontWeight: 'bold',
+                        fontSize: { xs: '1rem', sm: '1.1rem' },
+                        mt: 1,
+                        mb: 1
+                      }}
+                    >
+                      {`รวม: ฿${order.total_amount || order.total || order.totalAmount || (order.items ? order.items.reduce((sum, item) => sum + parseFloat(item.total_price || (item.price * item.quantity)), 0) : 0).toFixed(2)}`}
+                    </Typography>
+                  </CardContent>
                   
-                  {order.status === 'pending' && (
-                    <>
-                      <Tooltip title="เริ่มทำ">
+                  <CardActions sx={{ 
+                    justifyContent: 'center', 
+                    p: { xs: 1, sm: 1.5 },
+                    gap: 1
+                  }}>
+                    <Tooltip title="ดูรายละเอียด">
+                      <IconButton
+                        onClick={() => handleViewDetails(order)}
+                        sx={{
+                          color: 'white',
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          minWidth: { xs: '36px', sm: '40px' },
+                          minHeight: { xs: '36px', sm: '40px' },
+                          '&:hover': {
+                            background: 'rgba(255, 255, 255, 0.2)',
+                          }
+                        }}
+                      >
+                        <VisibilityIcon fontSize={isMobile ? "small" : "medium"} />
+                      </IconButton>
+                    </Tooltip>
+                    
+                    {(order.status === 'pending' || order.status === 'รอดำเนินการ') && (
+                      <>
+                        <Tooltip title="เริ่มทำ">
+                          <IconButton
+                            onClick={() => handleStatusChange(order.id, 'preparing')}
+                            sx={{
+                              color: 'white',
+                              background: '#4CAF50',
+                              minWidth: { xs: '36px', sm: '40px' },
+                              minHeight: { xs: '36px', sm: '40px' },
+                              '&:hover': {
+                                background: '#388E3C',
+                              }
+                            }}
+                          >
+                            <PlayArrowIcon fontSize={isMobile ? "small" : "medium"} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="ยกเลิก">
+                          <IconButton
+                            onClick={() => handleStatusChange(order.id, 'cancelled')}
+                            sx={{
+                              color: 'white',
+                              background: '#f44336',
+                              minWidth: { xs: '36px', sm: '40px' },
+                              minHeight: { xs: '36px', sm: '40px' },
+                              '&:hover': {
+                                background: '#d32f2f',
+                              }
+                            }}
+                          >
+                            <CancelIcon fontSize={isMobile ? "small" : "medium"} />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    )}
+                    
+                    {(order.status === 'preparing' || order.status === 'กำลังทำ') && (
+                      <Tooltip title="เสร็จสิ้น">
                         <IconButton
-                          onClick={() => handleStatusChange(order.id, 'preparing')}
+                          onClick={() => handleStatusChange(order.id, 'completed')}
                           sx={{
                             color: 'white',
                             background: '#4CAF50',
@@ -577,172 +663,169 @@ const Staff = () => {
                             }
                           }}
                         >
-                          <PlayArrowIcon fontSize={isMobile ? "small" : "medium"} />
+                          <CheckCircleIcon fontSize={isMobile ? "small" : "medium"} />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="ยกเลิก">
-                        <IconButton
-                          onClick={() => handleStatusChange(order.id, 'cancelled')}
-                          sx={{
-                            color: 'white',
-                            background: '#f44336',
-                            minWidth: { xs: '36px', sm: '40px' },
-                            minHeight: { xs: '36px', sm: '40px' },
-                            '&:hover': {
-                              background: '#d32f2f',
-                            }
-                          }}
-                        >
-                          <CancelIcon fontSize={isMobile ? "small" : "medium"} />
-                        </IconButton>
-                      </Tooltip>
-                    </>
-                  )}
-                  
-                  {order.status === 'preparing' && (
-                    <Tooltip title="เสร็จสิ้น">
-                      <IconButton
-                        onClick={() => handleStatusChange(order.id, 'completed')}
-                        sx={{
-                          color: 'white',
-                          background: '#4CAF50',
-                          minWidth: { xs: '36px', sm: '40px' },
-                          minHeight: { xs: '36px', sm: '40px' },
-                          '&:hover': {
-                            background: '#388E3C',
-                          }
-                        }}
-                      >
-                        <CheckCircleIcon fontSize={isMobile ? "small" : "medium"} />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                    )}
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
 
-        {filteredOrders.length === 0 && (
-          <Box sx={{ 
-            textAlign: 'center', 
-            py: { xs: 4, sm: 6, md: 8 },
-            color: 'rgba(255,255,255,0.7)'
-          }}>
-            <Typography variant="h6" sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-              ไม่มีคำสั่งซื้อในสถานะนี้
-            </Typography>
-            <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              คำสั่งซื้อใหม่จะปรากฏที่นี่
-            </Typography>
-          </Box>
-        )}
-
-        {/* Order Details Dialog */}
-        <Dialog
-          open={orderDetailsOpen}
-          onClose={handleCloseDetails}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{
-            sx: {
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              width: { xs: '95%', sm: '80%', md: '70%' }
-            }
-          }}
-        >
-          {selectedOrder && (
-            <>
-              <DialogTitle sx={{ color: 'white', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                รายละเอียดคำสั่งซื้อ #{selectedOrder.id}
-              </DialogTitle>
-              <DialogContent>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-                    ข้อมูลลูกค้า
-                  </Typography>
-                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    ชื่อ: {selectedOrder.customer_name}
-                  </Typography>
-                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    เวลา: {formatTime(selectedOrder.created_at)}
-                  </Typography>
-                </Box>
-                
-                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
-                
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-                    รายการสินค้า
-                  </Typography>
-                  {selectedOrder.items && selectedOrder.items.map((item, index) => (
-                    <Box key={index} sx={{ mb: 1, p: 1, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
-                      <Typography sx={{ color: 'white', fontWeight: 'bold' }}>
-                        {item.name} x{item.quantity}
-                      </Typography>
-                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
-                        ฿{item.price} ต่อชิ้น
-                      </Typography>
-                      {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
-                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
-                          ตัวเลือก: {Object.values(item.selectedOptions).map(option => option.name).join(', ')}
-                        </Typography>
-                      )}
-                    </Box>
-                  ))}
-                </Box>
-                
-                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" sx={{ color: 'white' }}>
-                    รวมทั้งหมด:
-                  </Typography>
-                  <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
-                    ฿{selectedOrder.total_amount}
-                  </Typography>
-                </Box>
-              </DialogContent>
-              <DialogActions sx={{ p: { xs: 2, sm: 3 } }}>
-                <Button 
-                  onClick={handleCloseDetails}
-                  sx={{
-                    color: 'white',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    minWidth: { xs: '80px', sm: '100px' },
-                    minHeight: { xs: '40px', sm: '36px' },
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.2)',
-                    }
-                  }}
-                >
-                  ปิด
-                </Button>
-              </DialogActions>
-            </>
+          {filteredOrders.length === 0 && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              py: { xs: 4, sm: 6, md: 8 },
+              color: 'rgba(255,255,255,0.7)'
+            }}>
+              <Typography variant="h6" sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                ไม่มีคำสั่งซื้อในสถานะนี้
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                คำสั่งซื้อใหม่จะปรากฏที่นี่
+              </Typography>
+            </Box>
           )}
-        </Dialog>
 
-        {/* Snackbar */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            severity={snackbar.severity}
-            sx={{ width: '100%' }}
+          {/* Order Details Dialog */}
+          <Dialog
+            open={orderDetailsOpen}
+            onClose={handleCloseDetails}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{
+              sx: {
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                width: { xs: '95%', sm: '80%', md: '70%' }
+              }
+            }}
           >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Container>
-    </Box>
+            {selectedOrder && (
+              <>
+                <DialogTitle sx={{ color: 'white', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                  รายละเอียดคำสั่งซื้อ #{selectedOrder.id}
+                </DialogTitle>
+                <DialogContent>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                      ข้อมูลลูกค้า
+                    </Typography>
+                    <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      ชื่อ: {selectedOrder.customer_name}
+                    </Typography>
+                    <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      เวลา: {formatTime(selectedOrder.created_at)}
+                    </Typography>
+                  </Box>
+                  
+                  <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
+                  
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                      รายการสินค้า
+                    </Typography>
+                    {selectedOrder.items && selectedOrder.items.map((item, index) => (
+                      <Box key={index} sx={{ mb: 1, p: 1, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
+                        <Typography sx={{ color: 'white', fontWeight: 'bold' }}>
+                          {item.name} x{item.quantity}
+                        </Typography>
+                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                          ฿{item.price} ต่อชิ้น
+                        </Typography>
+                        {(() => {
+                          const options = item.selectedOptions || item.selected_options;
+                          return options && Object.keys(options).length > 0 && (
+                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                              ตัวเลือก: {Object.entries(options).map(([key, option]) => {
+                                let detail = option.option_name || option.name || option;
+                                if ((option.price_adjustment && option.price_adjustment !== '0.00') || (option.price && option.price !== '0.00')) {
+                                  const price = option.price_adjustment || option.price;
+                                  detail += ` (+${price})`;
+                                }
+                                if (option.detail) {
+                                  detail += ` (${option.detail})`;
+                                }
+                                return `${key}: ${detail}`;
+                              }).join(', ')}
+                            </Typography>
+                          );
+                        })()}
+                        {item.sweetness && (
+                          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>
+                            ความหวาน: {item.sweetness}
+                          </Typography>
+                        )}
+                        {item.temperature && (
+                          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>
+                            อุณหภูมิ: {item.temperature}
+                          </Typography>
+                        )}
+                        {item.note && (
+                          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>
+                            หมายเหตุ: {item.note}
+                          </Typography>
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                  
+                  <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" sx={{ color: 'white' }}>
+                      รวมทั้งหมด:
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+                      ฿{
+                        selectedOrder.total_amount ||
+                        selectedOrder.total ||
+                        (selectedOrder.items ? selectedOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0) : 0)
+                      }
+                    </Typography>
+                  </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Button 
+                    onClick={handleCloseDetails}
+                    sx={{
+                      color: 'white',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      minWidth: { xs: '80px', sm: '100px' },
+                      minHeight: { xs: '40px', sm: '36px' },
+                      '&:hover': {
+                        background: 'rgba(255, 255, 255, 0.2)',
+                      }
+                    }}
+                  >
+                    ปิด
+                  </Button>
+                </DialogActions>
+              </>
+            )}
+          </Dialog>
+
+          {/* Snackbar */}
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert
+              onClose={() => setSnackbar({ ...snackbar, open: false })}
+              severity={snackbar.severity}
+              sx={{ width: '100%' }}
+            >
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
+        </Container>
+      </Box>
+    </>
   );
 };
 

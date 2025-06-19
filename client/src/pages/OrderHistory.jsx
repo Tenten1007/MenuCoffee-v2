@@ -47,16 +47,21 @@ const OrderHistory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const { token } = useAuth();
+  const { token: contextToken } = useAuth();
+  const token = contextToken || localStorage.getItem('token');
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     fetchOrders();
-  }, []);
+  }, [token]);
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/orders/history', {
+      const response = await axios.get('http://localhost:5000/api/orders', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(response.data);
@@ -349,9 +354,10 @@ const OrderHistory = () => {
                             size="small"
                             sx={{
                               backgroundColor: 
-                                order.status === 'completed' ? '#4caf50' :
-                                order.status === 'cancelled' ? '#f44336' :
-                                order.status === 'preparing' ? '#2196f3' : '#ff9800',
+                                order.status === 'completed' || order.status === 'เสร็จสิ้น' ? '#4caf50' :
+                                order.status === 'cancelled' || order.status === 'ยกเลิก' ? '#f44336' :
+                                order.status === 'preparing' || order.status === 'กำลังทำ' ? '#2196f3' :
+                                '#ff9800', // pending, รอดำเนินการ
                               color: 'white',
                               fontSize: { xs: '0.7rem', sm: '0.75rem' },
                               height: { xs: '20px', sm: '24px' }
@@ -367,7 +373,7 @@ const OrderHistory = () => {
                             mb: 1
                           }}
                         >
-                          {order.customerName}
+                          {order.customerName || order.customer_name || '-'}
                         </Typography>
                         
                         <Typography 
@@ -490,7 +496,7 @@ const OrderHistory = () => {
                     ข้อมูลลูกค้า
                   </Typography>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    ชื่อ: {selectedOrder.customerName}
+                    ชื่อ: {selectedOrder.customerName || selectedOrder.customer_name || '-'}
                   </Typography>
                   <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                     เวลา: {formatDate(selectedOrder.orderTime)}
@@ -511,6 +517,22 @@ const OrderHistory = () => {
                       <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
                         ฿{item.price} ต่อชิ้น
                       </Typography>
+                      {((item.selectedOptions && Object.keys(item.selectedOptions).length > 0) || (item.selected_options && Object.keys(item.selected_options).length > 0)) && (
+                        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', mt: 0.5 }}>
+                          ตัวเลือก: {
+                            item.selectedOptions
+                              ? Object.values(item.selectedOptions).map(opt => opt.option_name || opt.name).join(', ')
+                              : item.selected_options
+                                ? Object.values(item.selected_options).map(opt => opt.option_name || opt.name).join(', ')
+                                : '-'
+                          }
+                        </Typography>
+                      )}
+                      {item.note && (
+                        <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', mt: 0.5 }}>
+                          หมายเหตุ: {item.note}
+                        </Typography>
+                      )}
                     </Box>
                   ))}
                 </Box>

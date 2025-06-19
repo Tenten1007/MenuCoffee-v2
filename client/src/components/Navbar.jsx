@@ -69,8 +69,8 @@ const Navbar = () => {
 
   const menuItems = [
     { text: 'หน้าแรก', icon: <HomeIcon />, path: '/' },
-    { text: 'เมนู', icon: <CoffeeIcon />, path: '/menu' },
-    ...(isLoggedIn && user?.role === 'admin' ? [
+    ...(isLoggedIn ? [
+      { text: 'เมนู', icon: <CoffeeIcon />, path: '/menu' },
       { text: 'จัดการคำสั่งซื้อ', icon: <AdminIcon />, path: '/staff' },
       { text: 'ประวัติคำสั่งซื้อ', icon: <HistoryIcon />, path: '/order-history' }
     ] : [])
@@ -95,7 +95,7 @@ const Navbar = () => {
         {menuItems.map((item) => (
           <ListItem
             key={item.text}
-            button
+            {...(typeof ListItem.muiName === 'string' ? { button: true } : {})}
             onClick={() => handleNavigation(item.path)}
             selected={location.pathname === item.path}
             sx={{
@@ -117,7 +117,7 @@ const Navbar = () => {
         {isLoggedIn && (
           <>
             <Divider sx={{ my: 1 }} />
-            <ListItem button onClick={handleLogout}>
+            <ListItem {...(typeof ListItem.muiName === 'string' ? { button: true } : {})} onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon />
               </ListItemIcon>
@@ -177,20 +177,29 @@ const Navbar = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {isLoggedIn ? (
                 <>
-                  {user?.role === 'admin' && (
+                  {menuItems.slice(1).map((item) => (
                     <Button
-                      color="inherit"
-                      startIcon={<AdminIcon />}
-                      onClick={() => navigate('/staff')}
+                      key={item.text}
+                      color={location.pathname === item.path ? 'primary' : 'inherit'}
+                      startIcon={item.icon}
+                      onClick={() => navigate(item.path)}
                       sx={{
+                        fontWeight: location.pathname === item.path ? 'bold' : 'normal',
+                        color: location.pathname === item.path ? '#FFD700' : 'white',
+                        background: location.pathname === item.path ? 'rgba(255,215,0,0.08)' : 'none',
+                        borderRadius: 2,
+                        px: 2,
+                        mx: 0.5,
                         '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          background: 'rgba(255,215,0,0.15)',
+                          color: '#FFD700',
                         },
+                        transition: 'all 0.2s',
                       }}
                     >
-                      จัดการคำสั่งซื้อ
+                      {item.text}
                     </Button>
-                  )}
+                  ))}
                   <IconButton
                     color="inherit"
                     onClick={handleMenu}

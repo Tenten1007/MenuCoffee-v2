@@ -73,6 +73,7 @@ const Home = () => {
   const [menuOptions, setMenuOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [optionDialogOpen, setOptionDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { isLoggedIn, login } = useAuth();
@@ -163,16 +164,22 @@ const Home = () => {
     return basePrice + optionsPrice;
   };
 
+  const handleUpdateCartQuantity = (index, newQty) => {
+    if (newQty < 1) {
+      handleRemoveFromCart(index);
+      return;
+    }
+    setCart(prev => prev.map((item, i) => i === index ? { ...item, quantity: newQty } : item));
+  };
+
   const handleConfirmAddToCart = () => {
     // ตรวจสอบว่าผู้ใช้ได้เลือกตัวเลือกครบทุกประเภทหรือไม่
     const allTypesSelected = Object.keys(menuOptions).every(type => selectedOptions[type]);
-    
     if (!allTypesSelected) {
       alert('กรุณาเลือกตัวเลือกให้ครบทุกประเภท');
       return;
     }
-
-    // เพิ่มลงตะกร้า
+    // สร้าง cartItem ใหม่
     const cartItem = {
       id: selectedCoffee.id,
       name: selectedCoffee.name,
@@ -181,8 +188,24 @@ const Home = () => {
       totalPrice: calculateTotalPrice(),
       selectedOptions: selectedOptions
     };
-
-    setCart(prev => [...prev, cartItem]);
+    // เช็คว่ามีสินค้า+options เดิมใน cart หรือยัง
+    setCart(prev => {
+      const foundIndex = prev.findIndex(item =>
+        item.id === cartItem.id &&
+        JSON.stringify(item.selectedOptions) === JSON.stringify(cartItem.selectedOptions)
+      );
+      if (foundIndex !== -1) {
+        // ถ้ามีอยู่แล้ว เพิ่ม quantity
+        return prev.map((item, i) =>
+          i === foundIndex
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        // ถ้าไม่มี เพิ่มใหม่
+        return [...prev, cartItem];
+      }
+    });
     setOptionDialogOpen(false);
     setSelectedCoffee(null);
     setSelectedOptions({});
@@ -212,7 +235,7 @@ const Home = () => {
       });
       return;
     }
-
+    setIsSubmitting(true);
     try {
       const orderData = {
         customerName: customerName.trim(),
@@ -226,9 +249,7 @@ const Home = () => {
         })),
         status: 'รอดำเนินการ'
       };
-
       const response = await axios.post('http://localhost:5000/api/orders', orderData);
-      
       if (response.status === 201) {
         setCart([]);
         setCustomerName('');
@@ -242,12 +263,13 @@ const Home = () => {
         throw new Error('Failed to create order');
       }
     } catch (error) {
-      console.error('Error submitting order:', error);
       setSnackbar({
         open: true,
         message: error.response?.data?.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ',
         severity: 'error'
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -309,7 +331,7 @@ const Home = () => {
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
           position: 'relative',
           overflowX: 'hidden',
-          pt: { xs: `${NAVBAR_HEIGHT + 2}vh`, sm: `${NAVBAR_HEIGHT + 3}vh` },
+          pt: `${NAVBAR_HEIGHT}px`,
           pb: { xs: '2vh', sm: '4vh' },
           px: { xs: '2vw', sm: '4vw', md: '6vw' },
           '&::before': {
@@ -761,39 +783,51 @@ const Home = () => {
                           </Typography>
                         }
                         secondary={
-                          <Box>
-                            <Typography sx={{ 
+                          <>
+                            <Typography component="span" sx={{ 
                               color: '#FFD700',
                               fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
-                              fontWeight: 'bold'
+                              fontWeight: 'bold',
+                              display: 'block'
                             }}>
                               ฿{item.totalPrice} x {item.quantity}
                             </Typography>
                             {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
-                              <Typography sx={{ 
+                              <Typography component="span" sx={{ 
                                 color: 'rgba(255,255,255,0.6)',
                                 fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
-                                mt: '0.5vh'
+                                mt: '0.5vh',
+                                display: 'block'
                               }}>
-                                {Object.values(item.selectedOptions).map(option => option.name).join(', ')}
+                                {Object.values(item.selectedOptions).map(option => option.option_name || option.name).join(', ')}
                               </Typography>
                             )}
-                          </Box>
+                          </>
                         }
                       />
                       <ListItemSecondaryAction>
                         <IconButton
+                          onClick={() => handleUpdateCartQuantity(index, item.quantity - 1)}
+                          sx={{ color: '#FFD700', mr: 1 }}
+                          size="small"
+                        >
+                          <RemoveIcon />
+                        </IconButton>
+                        <Typography sx={{ color: 'white', mx: 1, minWidth: 24, display: 'inline-block', textAlign: 'center' }}>
+                          {item.quantity}
+                        </Typography>
+                        <IconButton
+                          onClick={() => handleUpdateCartQuantity(index, item.quantity + 1)}
+                          sx={{ color: '#FFD700', ml: 1 }}
+                          size="small"
+                        >
+                          <AddIcon />
+                        </IconButton>
+                        <IconButton
                           edge="end"
                           onClick={() => handleRemoveFromCart(index)}
-                          sx={{ 
-                            color: '#ff6b6b',
-                            fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
-                            width: { xs: 'clamp(2.5rem, 8vw, 3rem)', sm: 'clamp(2.8rem, 6vw, 3rem)' },
-                            height: { xs: 'clamp(2.5rem, 8vw, 3rem)', sm: 'clamp(2.8rem, 6vw, 3rem)' },
-                            '&:hover': {
-                              backgroundColor: 'rgba(255,107,107,0.1)'
-                            }
-                          }}
+                          sx={{ color: '#ff6b6b', ml: 1 }}
+                          size="small"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -806,56 +840,95 @@ const Home = () => {
             
             {/* Footer with Total and Buttons */}
             {cart.length > 0 && (
-              <Box sx={{ 
-                mt: 'auto',
-                pt: '2vh',
-                borderTop: '1px solid rgba(255,255,255,0.1)'
-              }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  mb: '2vh'
-                }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
+              <Box sx={{ mt: 'auto', pt: '2vh', borderTop: '1px solid rgba(255,255,255,0.1)', gap: 2, display: 'flex', flexDirection: 'column' }}>
+                {/* Section: ข้อมูลลูกค้า */}
+                <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 'bold', mb: 1, letterSpacing: 1 }}>
+                  ข้อมูลลูกค้า
+                </Typography>
+                <Divider sx={{ borderColor: 'rgba(255,255,255,0.15)', mb: 2 }} />
+                <TextField
+                  label="ชื่อลูกค้า"
+                  value={customerName}
+                  onChange={e => setCustomerName(e.target.value)}
+                  fullWidth
+                  required
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                      </InputAdornment>
+                    )
+                  }}
+                  helperText="กรุณากรอกชื่อเพื่อรับออเดอร์"
+                  sx={{
+                    mb: 2,
+                    '& .MuiOutlinedInput-root': {
                       color: 'white',
-                      fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' }
-                    }}
-                  >
+                      backgroundColor: 'rgba(255,255,255,0.08)',
+                      borderRadius: '12px',
+                      height: { xs: '6vh', sm: '5vh' },
+                      '& fieldset': { borderColor: 'rgba(255,255,255,0.2)', borderRadius: '12px' },
+                      '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+                      '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                    },
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: 'clamp(1rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
+                    }
+                  }}
+                />
+                {/* Section: ยอดรวม */}
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: 'rgba(255,255,255,0.08)',
+                  borderRadius: '12px',
+                  px: { xs: 2, sm: 3 },
+                  py: { xs: 1.5, sm: 2 },
+                  mb: 2,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                }}>
+                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', letterSpacing: 1 }}>
                     รวมทั้งหมด:
                   </Typography>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      color: '#FFD700', 
-                      fontWeight: 'bold',
-                      fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' }
-                    }}
-                  >
+                  <Typography variant="h5" sx={{ color: '#FFD700', fontWeight: 'bold', letterSpacing: 1 }}>
                     ฿{calculateTotal()}
                   </Typography>
                 </Box>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={() => setOrderDialogOpen(true)}
-                  sx={{
-                    background: 'linear-gradient(45deg, #4CAF50 30%, #45a049 90%)',
-                    color: 'white',
-                    fontWeight: 600,
-                    minHeight: { xs: '6vh', sm: '5vh' },
-                    borderRadius: '12px',
-                    fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
-                    mb: '2vh',
-                    '&:hover': {
-                      background: 'linear-gradient(45deg, #45a049 30%, #4CAF50 90%)',
-                    }
-                  }}
-                >
-                  สั่งซื้อ
-                </Button>
+                {/* Section: ปุ่มสั่งซื้อ */}
+                <Tooltip title={!customerName.trim() ? 'กรุณากรอกชื่อลูกค้าก่อนสั่งซื้อ' : ''} arrow placement="top">
+                  <span>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={handleSubmitOrder}
+                      disabled={!customerName.trim() || isSubmitting}
+                      startIcon={<CartIcon />}
+                      sx={{
+                        background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
+                        color: '#1a1a1a',
+                        fontWeight: 'bold',
+                        fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
+                        minHeight: { xs: '6vh', sm: '5vh' },
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 12px rgba(255,215,0,0.08)',
+                        mb: '2vh',
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)',
+                          color: '#222',
+                          transform: 'scale(1.03)'
+                        }
+                      }}
+                    >
+                      {isSubmitting ? 'กำลังส่งคำสั่งซื้อ...' : 'สั่งซื้อ'}
+                    </Button>
+                  </span>
+                </Tooltip>
               </Box>
             )}
             
@@ -886,229 +959,6 @@ const Home = () => {
             </Box>
           </Box>
         </Drawer>
-
-        {/* Order Dialog */}
-        <Dialog
-          open={orderDialogOpen}
-          onClose={() => setOrderDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: '16px',
-              background: 'rgba(45,45,45,0.95)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: 'white',
-              m: { xs: '2vw', sm: 0 },
-              maxWidth: { xs: '95vw', sm: '80vw', md: '60vw' }
-            }
-          }}
-        >
-          <DialogTitle sx={{ 
-            color: 'white', 
-            fontWeight: 'bold',
-            fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
-            pb: '1vh'
-          }}>
-            เพิ่มลงตะกร้า
-          </DialogTitle>
-          <DialogContent sx={{ p: { xs: '3vw', sm: '4vw' } }}>
-            {selectedCoffee && (
-              <Box sx={{ mt: '1vh' }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: '2vh',
-                    fontSize: { xs: 'clamp(1.1rem, 4vw, 1.4rem)', sm: 'clamp(1.2rem, 3vw, 1.4rem)' },
-                    color: 'white',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  {selectedCoffee.name}
-                </Typography>
-                
-                {/* ตัวเลือกเมนู */}
-                {Object.entries(selectedCoffee.options || {}).map(([type, options]) => (
-                  <Box key={type} sx={{ mb: { xs: '2vh', sm: '3vh' } }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      sx={{ 
-                        mb: '1vh',
-                        fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
-                        color: 'white',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {type === 'temperature' ? 'อุณหภูมิ' :
-                       type === 'sweetness' ? 'ความหวาน' :
-                       type === 'toppings' ? 'ท็อปปิ้ง' :
-                       type === 'size' ? 'ขนาด' : type}
-                    </Typography>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: { xs: '1vw', sm: '1.5vw' }
-                    }}>
-                      {options.map((option) => (
-                        <Button
-                          key={option.id}
-                          variant={selectedOptions[type]?.id === option.id ? "contained" : "outlined"}
-                          onClick={() => handleOptionChange(type, option)}
-                          disabled={!option.is_available}
-                          sx={{ 
-                            mb: '1vh',
-                            fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
-                            minHeight: { xs: '4.5vh', sm: '5vh' },
-                            borderRadius: '8px',
-                            '&.MuiButton-contained': {
-                              background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
-                              color: '#1a1a1a',
-                              fontWeight: 'bold'
-                            },
-                            '&.MuiButton-outlined': {
-                              borderColor: 'rgba(255,255,255,0.3)',
-                              color: 'rgba(255,255,255,0.7)',
-                              '&:hover': {
-                                borderColor: 'rgba(255,255,255,0.5)',
-                                backgroundColor: 'rgba(255,255,255,0.1)'
-                              }
-                            }
-                          }}
-                        >
-                          {option.option_name}
-                          {option.price_adjustment > 0 && ` (+${option.price_adjustment}฿)`}
-                        </Button>
-                      ))}
-                    </Box>
-                  </Box>
-                ))}
-
-                {/* ปริมาณ */}
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  mt: { xs: '2vh', sm: '3vh' },
-                  p: { xs: '2vw', sm: '2.5vw' },
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  borderRadius: '12px'
-                }}>
-                  <Typography 
-                    variant="subtitle1" 
-                    sx={{ 
-                      fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
-                      color: 'white',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    จำนวน:
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    gap: { xs: '1vw', sm: '2vw' }
-                  }}>
-                    <IconButton
-                      onClick={() => setSelectedCoffee(prev => ({
-                        ...prev,
-                        quantity: Math.max(1, prev.quantity - 1)
-                      }))}
-                      sx={{
-                        color: 'white',
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
-                        '&:hover': {
-                          backgroundColor: 'rgba(255,255,255,0.2)'
-                        }
-                      }}
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                    <Typography sx={{ 
-                      mx: { xs: '1vw', sm: '2vw' },
-                      fontSize: { xs: 'clamp(1.1rem, 4vw, 1.4rem)', sm: 'clamp(1.2rem, 3vw, 1.4rem)' },
-                      fontWeight: 'bold',
-                      color: 'white',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {selectedCoffee.quantity}
-                    </Typography>
-                    <IconButton
-                      onClick={() => setSelectedCoffee(prev => ({
-                        ...prev,
-                        quantity: prev.quantity + 1
-                      }))}
-                      sx={{
-                        color: 'white',
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
-                        '&:hover': {
-                          backgroundColor: 'rgba(255,255,255,0.2)'
-                        }
-                      }}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </Box>
-                </Box>
-
-                {/* ราคารวม */}
-                <Box sx={{ 
-                  mt: { xs: '2vh', sm: '3vh' }, 
-                  textAlign: 'right',
-                  p: { xs: '2vw', sm: '2.5vw' },
-                  backgroundColor: 'rgba(255,215,0,0.1)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255,215,0,0.3)'
-                }}>
-                  <Typography 
-                    variant="h6"
-                    sx={{
-                      fontSize: { xs: 'clamp(1.2rem, 4vw, 1.5rem)', sm: 'clamp(1.3rem, 3vw, 1.5rem)' },
-                      color: '#FFD700',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    ราคารวม: ฿{calculateTotalPrice()}
-                  </Typography>
-                </Box>
-              </Box>
-            )}
-          </DialogContent>
-          <DialogActions sx={{ 
-            p: { xs: '3vw', sm: '4vw' },
-            gap: { xs: '1vw', sm: '2vw' }
-          }}>
-            <Button 
-              onClick={() => setOrderDialogOpen(false)}
-              sx={{ 
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' }
-              }}
-            >
-              ยกเลิก
-            </Button>
-            <Button 
-              onClick={handleConfirmAddToCart} 
-              variant="contained"
-              sx={{
-                background: 'linear-gradient(45deg, #FFD700 30%, #FFA000 90%)',
-                color: '#1a1a1a',
-                fontWeight: 'bold',
-                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
-                minHeight: { xs: '5vh', sm: '4.5vh' },
-                borderRadius: '8px',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #FFA000 30%, #FFD700 90%)',
-                }
-              }}
-            >
-              เพิ่มลงตะกร้า
-            </Button>
-          </DialogActions>
-        </Dialog>
 
         {/* Staff Login Dialog */}
         <Dialog

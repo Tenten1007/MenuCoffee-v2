@@ -26,6 +26,7 @@ import {
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 const Menu = () => {
   const [coffees, setCoffees] = useState([]);
@@ -37,6 +38,7 @@ const Menu = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const { isLoggedIn } = useAuth();
 
   const categories = [
     { value: 'all', label: 'ทั้งหมด' },
@@ -51,6 +53,12 @@ const Menu = () => {
     { value: 'leaf-tea', label: 'ใบชา' },
     { value: 'food', label: 'อาหาร' }
   ];
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/');
+    }
+  }, [isLoggedIn, navigate]);
 
   useEffect(() => {
     fetchCoffees();
