@@ -99,13 +99,27 @@ const Navbar = () => {
             onClick={() => handleNavigation(item.path)}
             selected={location.pathname === item.path}
             sx={{
-              '&.Mui-selected': {
-                backgroundColor: 'primary.main',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: 'primary.dark',
-                },
+              cursor: 'pointer',
+              transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
+              '&:hover': {
+                background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
+                color: '#222',
+                transform: 'scale(1.04)',
+                boxShadow: '0 2px 12px 0 rgba(255,215,0,0.18)',
+                '& .MuiListItemIcon-root': {
+                  color: '#FFA000',
+                  transform: 'rotate(-8deg) scale(1.15)',
+                  transition: 'all 0.18s cubic-bezier(.4,2,.3,1)'
+                }
               },
+              '&.Mui-selected': {
+                background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
+                color: '#222',
+                fontWeight: 'bold',
+                '& .MuiListItemIcon-root': {
+                  color: '#FFD700'
+                }
+              }
             }}
           >
             <ListItemIcon sx={{ color: 'inherit' }}>

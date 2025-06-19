@@ -572,7 +572,7 @@ const Staff = () => {
                             {/* ราคาพื้นฐานของเมนู */}
                             {item.price && (
                               <Typography sx={{ color: '#FFD700', fontSize: '0.95rem', fontWeight: 500, ml: 3 }}>
-                                ราคา: {parseFloat(item.price).toFixed(2)} บาท
+                                ราคาเริ่มต้น: {parseFloat(item.price).toFixed(2)} บาท
                               </Typography>
                             )}
                           </Paper>

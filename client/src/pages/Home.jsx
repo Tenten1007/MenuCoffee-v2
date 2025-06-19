@@ -525,7 +525,9 @@ const Home = () => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'stretch',
+                  cursor: 'pointer',
                 }}
+                onClick={() => {/* ใส่ฟังก์ชันนำทางหรือแสดงรายละเอียดเมนูถ้ามี */}}
               >
                 <Card
                   sx={{
@@ -535,7 +537,6 @@ const Home = () => {
                     minWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
                     maxWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
                     minHeight: { sm: '40vh' },
-                    maxHeight: { sm: '40vh' },
                     background: 'rgba(30,30,30,0.95)',
                     borderRadius: '20px',
                     border: '2px solid rgba(255,215,0,0.13)',
@@ -610,23 +611,6 @@ const Home = () => {
                         }}
                       >
                         {coffee.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'rgba(255,255,255,0.82)',
-                          fontSize: { xs: 'clamp(0.92rem, 2.5vw, 1.05rem)', sm: 'clamp(0.95rem, 2vw, 1.08rem)' },
-                          lineHeight: 1.5,
-                          mb: '2vh',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          minHeight: { xs: '4vh', sm: '4.5vh' },
-                          textShadow: '0 1px 6px rgba(0,0,0,0.13)'
-                        }}
-                      >
-                        {coffee.description}
                       </Typography>
                     </Box>
                     <Box
@@ -809,7 +793,20 @@ const Home = () => {
                     <ListItem key={index} sx={{ 
                       py: { xs: '2vh', sm: '2.5vh' }, 
                       px: 0,
-                      borderBottom: '1px solid rgba(255,255,255,0.1)'
+                      borderBottom: '1px solid rgba(255,255,255,0.1)',
+                      cursor: 'pointer',
+                      transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
+                      '&:hover': {
+                        background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
+                        color: '#222',
+                        transform: 'scale(1.03)',
+                        boxShadow: '0 2px 12px 0 rgba(255,215,0,0.13)',
+                        '& .MuiListItemSecondaryAction-root, & .MuiIconButton-root': {
+                          color: '#FFA000',
+                          transform: 'scale(1.15)',
+                          transition: 'all 0.18s cubic-bezier(.4,2,.3,1)'
+                        }
+                      }
                     }}>
                       <ListItemText
                         primary={

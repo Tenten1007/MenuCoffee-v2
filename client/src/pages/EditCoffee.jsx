@@ -44,7 +44,6 @@ const EditCoffee = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     price: '',
     base_price: '',
     category: '',
@@ -103,7 +102,6 @@ const EditCoffee = () => {
       if (response.data) {
         setFormData({
           name: response.data.name || '',
-          description: response.data.description || '',
           price: response.data.price || '',
           base_price: response.data.base_price || '',
           category: response.data.category || '',
@@ -153,7 +151,6 @@ const EditCoffee = () => {
       setLoading(true);
       const data = new FormData();
       data.append('name', formData.name);
-      data.append('description', formData.description);
       data.append('price', formData.price);
       data.append('base_price', formData.base_price);
       data.append('category', formData.category);
@@ -378,37 +375,6 @@ const EditCoffee = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                size={isMobile ? "small" : "medium"}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    color: 'white',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }}
-              />
-              <TextField
-                fullWidth
-                label="รายละเอียด"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                required
-                multiline
-                rows={4}
                 size={isMobile ? "small" : "medium"}
                 sx={{
                   '& .MuiOutlinedInput-root': {

@@ -15,7 +15,7 @@ const pool = mysql.createPool({
 // Create a new coffee
 exports.create = async (req, res) => {
   try {
-    const { name, description, price, category, has_options, menu_options } = req.body;
+    const { name, price, category, has_options, menu_options } = req.body;
     
     // ตรวจสอบว่ามีการอัพโหลดไฟล์หรือไม่
     if (!req.file) {
@@ -26,7 +26,7 @@ exports.create = async (req, res) => {
     const imageUrl = `/uploads/${imagePath}`;
 
     // ตรวจสอบข้อมูลที่จำเป็น
-    if (!name || !description || !price || !category) {
+    if (!name || !price || !category) {
       return res.status(400).json({
         message: "กรุณากรอกข้อมูลให้ครบถ้วน"
       });
@@ -51,9 +51,9 @@ exports.create = async (req, res) => {
     try {
       // เพิ่มข้อมูลกาแฟ
       const [result] = await connection.query(
-        `INSERT INTO coffees (name, description, price, base_price, category, image, has_options) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [name, description, price, price, category, imageUrl, has_options ? 1 : 0]
+        `INSERT INTO coffees (name, price, base_price, category, image, has_options) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [name, price, price, category, imageUrl, has_options ? 1 : 0]
       );
 
       const coffeeId = result.insertId;
@@ -74,7 +74,6 @@ exports.create = async (req, res) => {
       res.status(201).json({ 
         id: coffeeId,
         name,
-        description,
         price,
         category,
         image: `http://localhost:${process.env.PORT || 5000}${imageUrl}`,
@@ -129,7 +128,7 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, category, has_options, menu_options } = req.body;
+    const { name, price, category, has_options, menu_options } = req.body;
     
     // เริ่ม transaction
     const connection = await pool.getConnection();
@@ -153,9 +152,9 @@ exports.update = async (req, res) => {
       // อัพเดทข้อมูลกาแฟ
       await connection.query(
         `UPDATE coffees 
-         SET name = ?, description = ?, price = ?, category = ?, image = ?, has_options = ?
+         SET name = ?, price = ?, category = ?, image = ?, has_options = ?
          WHERE id = ?`,
-        [name, description, price, category, imageUrl, has_options ? 1 : 0, id]
+        [name, price, category, imageUrl, has_options ? 1 : 0, id]
       );
 
       // ลบตัวเลือกเก่าทั้งหมด
@@ -183,7 +182,6 @@ exports.update = async (req, res) => {
         coffee: {
           id,
           name,
-          description,
           price,
           category,
           image: fullImageUrl,

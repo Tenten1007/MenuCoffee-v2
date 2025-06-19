@@ -277,17 +277,6 @@ const Order = () => {
                   >
                     {coffee.name}
                   </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-                      lineHeight: 1.5,
-                      flexGrow: 1
-                    }}
-                  >
-                    {coffee.description}
-                  </Typography>
                   <Box 
                     sx={{ 
                       display: 'flex',
