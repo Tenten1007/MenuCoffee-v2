@@ -24,14 +24,21 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid
+  Grid,
+  Chip,
+  Tooltip
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   CloudUpload as CloudUploadIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  LocalCafe,
+  Opacity,
+  AddCircle,
+  Layers,
+  Straighten
 } from '@mui/icons-material';
 import axios from 'axios';
 
@@ -537,215 +544,232 @@ const EditCoffee = () => {
           </form>
 
           {/* Menu Options Section */}
-          <Box sx={{ mt: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">ตัวเลือกเมนู</Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon sx={{ fontSize: 24 }} />}
-                  sx={{
-                    background: 'linear-gradient(135deg, rgba(67,160,71,0.85) 0%, rgba(56,142,60,0.85) 100%)',
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    boxShadow: '0 8px 32px 0 rgba(34,139,34,0.25)',
-                    px: 3,
-                    py: 1.2,
-                    borderRadius: 2.5,
-                    border: '1.5px solid rgba(255,255,255,0.18)',
-                    backdropFilter: 'blur(6px)',
-                    WebkitBackdropFilter: 'blur(6px)',
-                    transition: 'all 0.2s',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, rgba(56,142,60,0.95) 0%, rgba(67,160,71,0.95) 100%)',
-                      boxShadow: '0 12px 32px 0 rgba(34,139,34,0.35)',
-                      transform: 'translateY(-2px) scale(1.04)'
-                    }
-                  }}
-                  onClick={() => handleOptionDialogOpen()}
-                >
-                  เพิ่มตัวเลือก
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{ background: '#FFD700', color: '#1a1a1a', fontWeight: 600, boxShadow: 2, '&:hover': { background: '#FFC107' } }}
-                  onClick={() => {
-                    const preset = [
-                      { option_type: 'menu-type', option_name: 'ร้อน', price_adjustment: 0, is_available: true, id: Date.now() + 1 },
-                      { option_type: 'menu-type', option_name: 'เย็น', price_adjustment: 5, is_available: true, id: Date.now() + 2 },
-                      { option_type: 'menu-type', option_name: 'ปั่น', price_adjustment: 10, is_available: true, id: Date.now() + 3 },
-                    ];
-                    setMenuOptions(prev => ([
-                      ...prev,
-                      ...preset.filter(p => !prev.some(opt => opt.option_type === 'menu-type' && opt.option_name === p.option_name))
-                    ]));
-                  }}
-                >
-                  + ประเภทเมนู (ร้อน/เย็น/ปั่น)
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{ background: '#2196F3', color: '#fff', fontWeight: 600, boxShadow: 2, '&:hover': { background: '#1976D2' } }}
-                  onClick={() => {
-                    const preset = [
-                      { option_type: 'sweetness', option_name: 'ไม่หวาน', price_adjustment: 0, is_available: true, id: Date.now() + 11 },
-                      { option_type: 'sweetness', option_name: 'หวานน้อย', price_adjustment: 0, is_available: true, id: Date.now() + 12 },
-                      { option_type: 'sweetness', option_name: 'ปกติ', price_adjustment: 0, is_available: true, id: Date.now() + 13 },
-                      { option_type: 'sweetness', option_name: 'หวานมาก', price_adjustment: 0, is_available: true, id: Date.now() + 14 },
-                    ];
-                    setMenuOptions(prev => ([
-                      ...prev,
-                      ...preset.filter(p => !prev.some(opt => opt.option_type === 'sweetness' && opt.option_name === p.option_name))
-                    ]));
-                  }}
-                >
-                  + ระดับความหวาน
-                </Button>
-              </Box>
-            </Box>
-
-            <List>
-              {menuOptions.map((option) => (
-                <ListItem
-                  key={option.id}
-                  sx={{
-                    bgcolor: 'background.paper',
-                    mb: 1,
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'divider'
-                  }}
-                >
-                  <ListItemText
-                    primary={option.option_name}
-                    secondary={`${optionTypes.find(t => t.value === option.option_type)?.label || option.option_type} - ราคาเพิ่ม ${option.price_adjustment} บาท`}
+          <Box sx={{ mb: 3 }}>
+            <Paper elevation={2} sx={{ p: 2, borderRadius: 3, background: 'rgba(255,255,255,0.08)', boxShadow: '0 2px 12px 0 rgba(255,215,0,0.08)', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
+                  ตัวเลือกเพิ่มเติม
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Switch
+                    checked={formData.has_options}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, has_options: e.target.checked }));
+                      if (!e.target.checked) setMenuOptions([]);
+                    }}
+                    color="primary"
                   />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="edit"
-                      onClick={() => handleOptionDialogOpen(option)}
-                      sx={{ mr: 1 }}
+                  <Typography component="span" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    เปิดใช้งาน
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ opacity: formData.has_options ? 1 : 0.4, pointerEvents: formData.has_options ? 'auto' : 'none', transition: 'opacity 0.2s' }}>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                  <Tooltip title="Preset: ประเภทเมนู (ร้อน/เย็น/ปั่น)" arrow>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ minWidth: 0, borderRadius: '50%', p: 1.2, color: '#FFD700', borderColor: '#FFD700', background: 'rgba(255,215,0,0.08)', '&:hover': { background: 'rgba(255,215,0,0.18)' } }}
+                      onClick={() => {
+                        const preset = [
+                          { option_type: 'menu-type', option_name: 'ร้อน', price_adjustment: 0, is_available: true, id: Date.now() + 1 },
+                          { option_type: 'menu-type', option_name: 'เย็น', price_adjustment: 5, is_available: true, id: Date.now() + 2 },
+                          { option_type: 'menu-type', option_name: 'ปั่น', price_adjustment: 10, is_available: true, id: Date.now() + 3 },
+                        ];
+                        setMenuOptions(prev => ([
+                          ...prev,
+                          ...preset.filter(p => !prev.some(opt => opt.option_type === 'menu-type' && opt.option_name === p.option_name))
+                        ]));
+                      }}
                     >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleDeleteOption(option.id)}
+                      <LocalCafe />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Preset: ระดับความหวาน" arrow>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ minWidth: 0, borderRadius: '50%', p: 1.2, color: '#2196F3', borderColor: '#2196F3', background: 'rgba(33,150,243,0.08)', '&:hover': { background: 'rgba(33,150,243,0.18)' } }}
+                      onClick={() => {
+                        const preset = [
+                          { option_type: 'sweetness', option_name: 'ไม่หวาน', price_adjustment: 0, is_available: true, id: Date.now() + 11 },
+                          { option_type: 'sweetness', option_name: 'หวานน้อย', price_adjustment: 0, is_available: true, id: Date.now() + 12 },
+                          { option_type: 'sweetness', option_name: 'ปกติ', price_adjustment: 0, is_available: true, id: Date.now() + 13 },
+                          { option_type: 'sweetness', option_name: 'หวานมาก', price_adjustment: 0, is_available: true, id: Date.now() + 14 },
+                        ];
+                        setMenuOptions(prev => ([
+                          ...prev,
+                          ...preset.filter(p => !prev.some(opt => opt.option_type === 'sweetness' && opt.option_name === p.option_name))
+                        ]));
+                      }}
                     >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
+                      <Opacity />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="เพิ่มตัวเลือกใหม่" arrow>
+                    <Button
+                      variant="contained"
+                      startIcon={<AddCircle sx={{ fontSize: 28 }} />}
+                      sx={{
+                        background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
+                        color: '#1a1a1a',
+                        fontWeight: 700,
+                        borderRadius: 3,
+                        px: 3,
+                        py: 1.2,
+                        boxShadow: '0 4px 16px 0 rgba(255,215,0,0.12)',
+                        transition: 'all 0.18s',
+                        '&:hover': {
+                          background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)',
+                          color: '#222',
+                          transform: 'scale(1.04)',
+                          boxShadow: '0 6px 24px 0 rgba(255,215,0,0.18)'
+                        }
+                      }}
+                      onClick={() => handleOptionDialogOpen()}
+                    >
+                      เพิ่มตัวเลือก
+                    </Button>
+                  </Tooltip>
+                </Box>
+                <List sx={{ mt: 2 }}>
+                  {menuOptions.length === 0 && (
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', mb: 1, ml: 2 }}>
+                      ยังไม่มีตัวเลือกเพิ่มเติม
+                    </Typography>
+                  )}
+                  {menuOptions.map((option) => (
+                    <ListItem
+                      key={option.id}
+                      sx={{
+                        bgcolor: 'rgba(255,255,255,0.10)',
+                        mb: 1,
+                        borderRadius: 2,
+                        border: '1px solid rgba(255,215,0,0.13)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2
+                      }}
+                    >
+                      <Chip
+                        label={optionTypes.find(t => t.value === option.option_type)?.label || option.option_type}
+                        color={option.option_type === 'menu-type' ? 'warning' : option.option_type === 'sweetness' ? 'info' : 'default'}
+                        icon={option.option_type === 'menu-type' ? <LocalCafe /> : option.option_type === 'sweetness' ? <Opacity /> : option.option_type === 'toppings' ? <Layers /> : option.option_type === 'size' ? <Straighten /> : null}
+                        sx={{ mr: 2, fontWeight: 600, fontSize: '0.95rem', px: 1.5, background: 'rgba(255,215,0,0.13)' }}
+                      />
+                      <ListItemText
+                        primary={<Typography sx={{ color: 'white', fontWeight: 600 }}>{option.option_name}</Typography>}
+                        secondary={<Typography sx={{ color: '#FFD700', fontWeight: 500, fontSize: '0.95rem' }}>+{option.price_adjustment} บาท</Typography>}
+                      />
+                      <Tooltip title="แก้ไข" arrow>
+                        <IconButton edge="end" aria-label="edit" onClick={() => handleOptionDialogOpen(option)} sx={{ color: '#2196F3', mr: 1, background: 'rgba(33,150,243,0.08)', borderRadius: '50%' }}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="ลบ" arrow>
+                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteOption(option.id)} sx={{ color: '#ff4444', background: 'rgba(255,68,68,0.08)', borderRadius: '50%' }}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Paper>
           </Box>
 
           {/* Option Dialog */}
-          <Dialog open={optionDialogOpen} onClose={handleOptionDialogClose} maxWidth="sm" fullWidth>
-            <DialogTitle>
-              {editingOption ? 'แก้ไขตัวเลือก' : 'เพิ่มตัวเลือกใหม่'}
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel id="option-type-label">ประเภทตัวเลือก</InputLabel>
-                    <Select
-                      labelId="option-type-label"
-                      value={optionForm.option_type}
-                      onChange={(e) => setOptionForm({ ...optionForm, option_type: e.target.value })}
-                      label="ประเภทตัวเลือก"
+          <Dialog open={optionDialogOpen} onClose={handleOptionDialogClose} maxWidth="xs" fullWidth>
+            <Paper elevation={3} sx={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(45,45,45,0.82) 100%)', backdropFilter: 'blur(18px)', borderRadius: 4, p: 2, border: '2px solid #FFD700', boxShadow: '0 4px 24px 0 rgba(255,215,0,0.10)' }}>
+              <DialogTitle sx={{ color: '#FFD700', fontWeight: 900, fontSize: '1.5rem', textAlign: 'center', mb: 1 }}>{editingOption ? 'แก้ไขตัวเลือก' : 'เพิ่มตัวเลือกใหม่'}</DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth>
+                      <InputLabel>ประเภทตัวเลือก</InputLabel>
+                      <Select
+                        value={optionForm.option_type}
+                        onChange={(e) => setOptionForm({ ...optionForm, option_type: e.target.value })}
+                        label="ประเภทตัวเลือก"
+                        sx={{ borderRadius: 2, background: 'rgba(255,255,255,0.10)' }}
+                      >
+                        {optionTypes.map((type) => (
+                          <MenuItem key={type.value} value={type.value}>
+                            {type.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Button size="small" onClick={() => setOptionTypeDialogOpen(true)} sx={{ mt: 1, color: '#FFD700' }}>+ เพิ่มประเภทตัวเลือกใหม่</Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
                       fullWidth
-                      MenuProps={{
-                        PaperProps: {
-                          style: {
-                            minWidth: 200,
-                            maxWidth: 350,
-                          },
-                        },
-                      }}
-                    >
-                      {optionTypes.map((type) => (
-                        <MenuItem key={type.value} value={type.value}>
-                          {type.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                      label="ชื่อตัวเลือก"
+                      value={optionForm.option_name}
+                      onChange={(e) => setOptionForm({ ...optionForm, option_name: e.target.value })}
+                      InputProps={{ sx: { borderRadius: 2, background: 'rgba(255,255,255,0.10)' } }}
+                      helperText={!optionForm.option_name ? 'กรุณาระบุชื่อตัวเลือก' : ''}
+                      error={!optionForm.option_name}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="ราคาเพิ่มเติม"
+                      type="number"
+                      value={optionForm.price_adjustment}
+                      onChange={(e) => setOptionForm({ ...optionForm, price_adjustment: e.target.value })}
+                      InputProps={{ sx: { borderRadius: 2, background: 'rgba(255,255,255,0.10)' } }}
+                      helperText={optionForm.price_adjustment === '' ? 'กรุณาระบุราคาเพิ่มเติม' : ''}
+                      error={optionForm.price_adjustment === ''}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="ชื่อตัวเลือก"
-                    value={optionForm.option_name}
-                    onChange={(e) => setOptionForm({ ...optionForm, option_name: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="ราคาเพิ่มเติม"
-                    type="number"
-                    value={optionForm.price_adjustment}
-                    onChange={(e) => setOptionForm({ ...optionForm, price_adjustment: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography>เปิดใช้งาน</Typography>
-                      <Switch
-                        checked={optionForm.is_available}
-                        onChange={(e) => setOptionForm({ ...optionForm, is_available: e.target.checked })}
-                      />
-                    </Box>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleOptionDialogClose}>ยกเลิก</Button>
-              <Button onClick={handleOptionSubmit} variant="contained">
-                บันทึก
-              </Button>
-            </DialogActions>
+              </DialogContent>
+              <DialogActions sx={{ justifyContent: 'center', gap: 2, mt: 1 }}>
+                <Button onClick={handleOptionDialogClose} sx={{ color: '#FFD700', border: '1.5px solid #FFD700', borderRadius: 2, fontWeight: 700, px: 3, py: 1, background: 'rgba(255,255,255,0.10)', '&:hover': { background: 'rgba(255,255,255,0.18)', borderColor: '#FFA000', color: '#FFA000', transform: 'scale(1.04)' } }}>ยกเลิก</Button>
+                <Button onClick={handleOptionSubmit} variant="contained" sx={{ background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)', color: '#1a1a1a', fontWeight: 900, fontSize: '1.1rem', borderRadius: 2, px: 4, py: 1.2, boxShadow: '0 4px 24px 0 rgba(255,215,0,0.10)', letterSpacing: 1, transition: 'all 0.18s', '&:hover': { background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)', color: '#222', transform: 'scale(1.04)', boxShadow: '0 8px 32px 0 rgba(255,215,0,0.18)' } }}>{editingOption ? 'บันทึก' : 'เพิ่ม'}</Button>
+              </DialogActions>
+            </Paper>
           </Dialog>
 
           {/* Option Type Dialog */}
-          <Dialog open={optionTypeDialogOpen} onClose={() => setOptionTypeDialogOpen(false)} maxWidth="sm" fullWidth>
-            <DialogTitle>เพิ่มประเภทตัวเลือกใหม่</DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="ชื่อประเภท (ภาษาไทย)"
-                    value={newOptionType.label}
-                    onChange={(e) => setNewOptionType({ ...newOptionType, label: e.target.value })}
-                  />
+          <Dialog open={optionTypeDialogOpen} onClose={() => setOptionTypeDialogOpen(false)} maxWidth="xs" fullWidth>
+            <Paper elevation={3} sx={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(45,45,45,0.82) 100%)', backdropFilter: 'blur(18px)', borderRadius: 4, p: 2, border: '2px solid #FFD700', boxShadow: '0 4px 24px 0 rgba(255,215,0,0.10)' }}>
+              <DialogTitle sx={{ color: '#FFD700', fontWeight: 900, fontSize: '1.5rem', textAlign: 'center', mb: 1 }}>เพิ่มประเภทตัวเลือกใหม่</DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="ชื่อประเภท (ภาษาไทย)"
+                      value={newOptionType.label}
+                      onChange={(e) => setNewOptionType({ ...newOptionType, label: e.target.value })}
+                      InputProps={{ sx: { borderRadius: 2, background: 'rgba(255,255,255,0.10)' } }}
+                      helperText={!newOptionType.label ? 'กรุณาระบุชื่อประเภท (ภาษาไทย)' : ''}
+                      error={!newOptionType.label}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="รหัสประเภท (ภาษาอังกฤษ)"
+                      value={newOptionType.value}
+                      onChange={(e) => setNewOptionType({ ...newOptionType, value: e.target.value })}
+                      InputProps={{ sx: { borderRadius: 2, background: 'rgba(255,255,255,0.10)' } }}
+                      helperText="ใช้ตัวพิมพ์เล็กและเครื่องหมายขีด (-) แทนช่องว่าง"
+                      error={!newOptionType.value}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="รหัสประเภท (ภาษาอังกฤษ)"
-                    value={newOptionType.value}
-                    onChange={(e) => setNewOptionType({ ...newOptionType, value: e.target.value })}
-                    helperText="ใช้ตัวพิมพ์เล็กและเครื่องหมายขีด (-) แทนช่องว่าง"
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOptionTypeDialogOpen(false)}>ยกเลิก</Button>
-              <Button onClick={handleAddOptionType} variant="contained">
-                เพิ่มประเภท
-              </Button>
-            </DialogActions>
+              </DialogContent>
+              <DialogActions sx={{ justifyContent: 'center', gap: 2, mt: 1 }}>
+                <Button onClick={() => setOptionTypeDialogOpen(false)} sx={{ color: '#FFD700', border: '1.5px solid #FFD700', borderRadius: 2, fontWeight: 700, px: 3, py: 1, background: 'rgba(255,255,255,0.10)', '&:hover': { background: 'rgba(255,255,255,0.18)', borderColor: '#FFA000', color: '#FFA000', transform: 'scale(1.04)' } }}>ยกเลิก</Button>
+                <Button onClick={handleAddOptionType} variant="contained" sx={{ background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)', color: '#1a1a1a', fontWeight: 900, fontSize: '1.1rem', borderRadius: 2, px: 4, py: 1.2, boxShadow: '0 4px 24px 0 rgba(255,215,0,0.10)', letterSpacing: 1, transition: 'all 0.18s', '&:hover': { background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)', color: '#222', transform: 'scale(1.04)', boxShadow: '0 8px 32px 0 rgba(255,215,0,0.18)' } }}>เพิ่มประเภท</Button>
+              </DialogActions>
+            </Paper>
           </Dialog>
         </Paper>
         <Box sx={{
