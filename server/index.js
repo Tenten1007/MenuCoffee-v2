@@ -80,6 +80,7 @@ const pool = mysql.createPool({
 });
 
 // ฟังก์ชันสำหรับสร้างฐานข้อมูลและตาราง
+/*
 async function initializeDatabase() {
   try {
     // สร้างฐานข้อมูล
@@ -129,8 +130,10 @@ async function initializeDatabase() {
     throw error;
   }
 }
+*/
 
 // เรียกใช้ฟังก์ชันเริ่มต้นฐานข้อมูล
+/*
 initializeDatabase()
   .then(() => {
     console.log('Database initialization completed');
@@ -139,6 +142,7 @@ initializeDatabase()
     console.error('Failed to initialize database:', error);
     process.exit(1);
   });
+*/
 
 httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);
