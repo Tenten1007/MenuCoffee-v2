@@ -493,7 +493,7 @@ const Staff = () => {
                         mb: 1
                       }}
                     >
-                      {order.customer_name}
+                      {order.customer_name || order.customerName || '-'}
                     </Typography>
                     
                     <Typography 
@@ -715,7 +715,7 @@ const Staff = () => {
                       ข้อมูลลูกค้า
                     </Typography>
                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                      ชื่อ: {selectedOrder.customer_name}
+                      ชื่อ: {selectedOrder.customer_name || selectedOrder.customerName || '-'}
                     </Typography>
                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                       เวลา: {formatTime(selectedOrder.created_at)}

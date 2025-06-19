@@ -50,6 +50,23 @@ exports.create = async (req, res) => {
       }
 
       await connection.commit();
+
+      // Emit newOrder event (realtime notification)
+      const io = req.app.get('socketio');
+      // ดึงข้อมูล order ที่เพิ่งสร้าง (รวม items)
+      const [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [orderId]);
+      const [dbItems] = await pool.query('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+      const newOrder = {
+        ...orders[0],
+        items: dbItems.map(item => ({
+          ...item,
+          selectedOptions: (typeof item.selected_options === 'string' && item.selected_options.trim().startsWith('{'))
+            ? JSON.parse(item.selected_options)
+            : undefined
+        }))
+      };
+      io.emit('newOrder', newOrder);
+
       res.status(201).json({ 
         message: 'สร้างออเดอร์สำเร็จ',
         orderId,
