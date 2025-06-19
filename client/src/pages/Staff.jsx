@@ -271,14 +271,28 @@ const Staff = () => {
     navigate('/');
   };
 
-  const filteredOrders = orders.filter(order => {
-    const status = (order.status || '').toLowerCase();
-    if (currentTab === 0) return status === 'pending' || status === 'รอดำเนินการ';
-    if (currentTab === 1) return status === 'preparing' || status === 'กำลังทำ';
-    if (currentTab === 2) return status === 'completed' || status === 'เสร็จสิ้น';
-    if (currentTab === 3) return status === 'cancelled' || status === 'ยกเลิก';
-    return false;
-  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  function isToday(dateString) {
+    if (!dateString) return false;
+    const d = new Date(dateString);
+    const now = new Date();
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    );
+  }
+
+  const filteredOrders = orders
+    .filter(order => isToday(order.created_at || order.orderTime))
+    .filter(order => {
+      const status = (order.status || '').toLowerCase();
+      if (currentTab === 0) return status === 'pending' || status === 'รอดำเนินการ';
+      if (currentTab === 1) return status === 'preparing' || status === 'กำลังทำ';
+      if (currentTab === 2) return status === 'completed' || status === 'เสร็จสิ้น';
+      if (currentTab === 3) return status === 'cancelled' || status === 'ยกเลิก';
+      return false;
+    })
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   return (
     <>
@@ -346,42 +360,31 @@ const Staff = () => {
                   fontSize: { xs: '0.875rem', sm: '1rem' }
                 }}
               >
-                จำนวนคำสั่งซื้อทั้งหมด: {orders.length}
+                จำนวนคำสั่งซื้อวันนี้: {orders.filter(order => isToday(order.created_at || order.orderTime)).length}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
-                  variant="outlined"
-                  startIcon={<RefreshIcon />}
-                  onClick={fetchOrders}
-                  sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    minHeight: { xs: '36px', sm: '40px' },
-                    '&:hover': {
-                      borderColor: 'white',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    }
-                  }}
-                >
-                  {!isMobile && 'รีเฟรช'}
-                </Button>
-                <Button
-                  variant="outlined"
+                  variant="contained"
                   startIcon={<LogoutIcon />}
                   onClick={handleLogout}
                   sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    minHeight: { xs: '36px', sm: '40px' },
+                    borderRadius: '999px',
+                    px: { xs: 3, sm: 4 },
+                    py: { xs: 1.2, sm: 1.5 },
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
+                    fontWeight: 'bold',
+                    letterSpacing: 1,
+                    boxShadow: '0 2px 8px rgba(244,67,54,0.10)',
+                    background: 'linear-gradient(90deg, #ff5252 0%, #f44336 100%)',
+                    color: '#fff',
                     '&:hover': {
-                      borderColor: 'white',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      background: 'linear-gradient(90deg, #f44336 0%, #ff5252 100%)',
+                      color: '#fff',
+                      boxShadow: '0 4px 16px rgba(244,67,54,0.18)'
                     }
                   }}
                 >
-                  {!isMobile && 'ออกจากระบบ'}
+                  ออกจากระบบ
                 </Button>
               </Box>
             </Box>
@@ -444,14 +447,15 @@ const Staff = () => {
               >
                 <Card
                   sx={{
-                    background: 'rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.10)',
                     backdropFilter: 'blur(10px)',
                     borderRadius: '16px',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: `2.5px solid ${getStatusColor(order.status)}`,
+                    boxShadow: `0 0 16px 2px ${getStatusColor(order.status)}33`,
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     '&:hover': {
                       transform: 'translateY(-5px)',
-                      boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+                      boxShadow: `0 12px 24px ${getStatusColor(order.status)}55`,
                     },
                     height: '100%',
                     display: 'flex',
