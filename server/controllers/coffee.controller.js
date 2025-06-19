@@ -32,8 +32,20 @@ exports.create = async (req, res) => {
       });
     }
 
-    // เริ่ม transaction
+    // เช็คชื่อเมนูซ้ำ
     const connection = await pool.getConnection();
+    try {
+      const [dup] = await connection.query('SELECT id FROM coffees WHERE name = ?', [name]);
+      if (dup.length > 0) {
+        connection.release();
+        return res.status(409).json({ message: 'มีเมนูนี้อยู่แล้ว กรุณาตั้งชื่อใหม่' });
+      }
+    } catch (error) {
+      connection.release();
+      throw error;
+    }
+
+    // เริ่ม transaction
     await connection.beginTransaction();
 
     try {

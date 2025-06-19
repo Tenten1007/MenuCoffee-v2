@@ -229,8 +229,12 @@ const AddCoffee = () => {
         throw new Error(response.data.message || 'เกิดข้อผิดพลาดในการเพิ่มเมนู');
       }
     } catch (error) {
-      console.error('Error adding coffee:', error);
-      alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการเพิ่มเมนู กรุณาลองใหม่อีกครั้ง');
+      if (error.response && error.response.status === 409) {
+        alert('ชื่อเมนูนี้ถูกใช้ไปแล้ว กรุณาตั้งชื่อใหม่');
+      } else {
+        console.error('Error adding coffee:', error);
+        alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการเพิ่มเมนู กรุณาลองใหม่อีกครั้ง');
+      }
     }
   };
 

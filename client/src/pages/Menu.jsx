@@ -263,7 +263,6 @@ const Menu = () => {
                   minWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
                   maxWidth: { xs: '80vw', sm: '220px', md: '200px', lg: '180px' },
                   minHeight: { sm: '40vh' },
-                  maxHeight: { sm: '40vh' },
                   background: 'rgba(255,255,255,0.1)',
                   backdropFilter: 'blur(10px)',
                   borderRadius: '20px',

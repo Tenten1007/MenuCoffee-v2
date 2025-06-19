@@ -14,13 +14,13 @@ CREATE TABLE IF NOT EXISTS staff (
 
 CREATE TABLE IF NOT EXISTS coffees (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    base_price DECIMAL(10,2) NOT NULL,
+    base_price DECIMAL(10,2),
+    category VARCHAR(100),
     image VARCHAR(255),
-    category VARCHAR(50) NOT NULL,
-    has_options BOOLEAN DEFAULT false,
+    has_options BOOLEAN DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
