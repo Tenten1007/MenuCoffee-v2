@@ -107,21 +107,15 @@ const theme = createTheme({
   },
 });
 
-// Component to conditionally render Navbar
-const NavbarWrapper = () => {
-  const location = useLocation();
-  return location.pathname !== '/' ? <Navbar /> : null;
-};
-
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
         <Router>
-          <NavbarWrapper />
+          <Navbar />
           <Box sx={{ 
-            pt: location.pathname === '/' ? 0 : { xs: 7, sm: 8 },
+            pt: { xs: 7, sm: 8 },
             minHeight: '100vh',
             overflowX: 'hidden'
           }}>

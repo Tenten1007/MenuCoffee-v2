@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import khunyaLogo from '../assets/khunya-logo.png';
 
 export const NAVBAR_HEIGHT = 64; // px, export this for use in page padding
 
@@ -78,18 +79,24 @@ const Navbar = () => {
 
   const drawer = (
     <Box sx={{ width: 250, pt: 2 }}>
-      <Typography
-        variant="h6"
-        sx={{
-          px: 2,
-          py: 1,
-          color: 'primary.main',
-          fontWeight: 'bold',
-          textAlign: 'center'
-        }}
-      >
-        คุณย่า Coffee
-      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1 }}>
+        <img
+          src={khunyaLogo}
+          alt="คุณย่า Coffee Logo"
+          style={{ height: 56, width: 'auto', borderRadius: '50%', background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: 6 }}
+        />
+        <Typography
+          variant="h6"
+          sx={{
+            color: 'primary.main',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            mt: 1
+          }}
+        >
+          คุณย่า Coffee
+        </Typography>
+      </Box>
       <Divider sx={{ my: 2 }} />
       <List>
         {menuItems.map((item) => (
@@ -167,24 +174,44 @@ const Navbar = () => {
                 <MenuIcon />
               </IconButton>
             )}
-            <Typography
-              variant={isMobile ? "h6" : "h5"}
-              component="div"
+            <Box
               sx={{
+                display: 'flex',
+                alignItems: 'center',
                 cursor: 'pointer',
-                color: 'white',
-                fontWeight: 'bold',
-                textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                '&:hover': {
-                  color: '#90CAF9',
-                },
-                transition: 'color 0.3s ease-in-out',
-                fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' }
+                gap: 1.2,
               }}
               onClick={() => navigate('/')}
             >
-              คุณย่า Coffee
-            </Typography>
+              <img
+                src={khunyaLogo}
+                alt="คุณย่า Coffee Logo"
+                style={{
+                  height: isMobile ? 36 : 44,
+                  width: 'auto',
+                  borderRadius: '50%',
+                  background: 'white',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  marginRight: 8
+                }}
+              />
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
+                component="div"
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  '&:hover': {
+                    color: '#90CAF9',
+                  },
+                  transition: 'color 0.3s ease-in-out',
+                  fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' }
+                }}
+              >
+                คุณย่า Coffee
+              </Typography>
+            </Box>
           </Box>
 
           {!isMobile && (
