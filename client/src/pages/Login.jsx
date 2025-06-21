@@ -10,7 +10,7 @@ import {
   Alert
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { api } from '../api';
+import api from '../api';
 import { AuthContext } from '../contexts/AuthContext';
 
 const Login = () => {

@@ -27,7 +27,7 @@ import {
   Tooltip
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api';
+import api from '../api';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,

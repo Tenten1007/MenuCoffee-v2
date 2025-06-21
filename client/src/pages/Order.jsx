@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api'; // Use named import
+import api from '../api';
 import {
   Container,
   Typography,
