@@ -82,13 +82,16 @@ exports.create = async (req, res) => {
       await connection.commit();
       
       const serverUrl = `${req.protocol}://${req.get('host')}`;
+      const fullImageUrl = imageUrl && imageUrl.startsWith('http')
+        ? imageUrl
+        : imageUrl ? `${serverUrl}${imageUrl}` : null;
       
       res.status(201).json({ 
         id: coffeeId,
         name: safeName,
         price,
         category: safeCategory,
-        image: `${serverUrl}${imageUrl}`,
+        image: fullImageUrl,
         has_options: has_options ? 1 : 0
       });
     } catch (error) {
@@ -108,10 +111,12 @@ exports.findAll = async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM coffees ORDER BY created_at DESC');
     const serverUrl = `${req.protocol}://${req.get('host')}`;
-    const coffeesWithAbsoluteImageUrls = rows.map(coffee => ({
-      ...coffee,
-      image: coffee.image ? `${serverUrl}${coffee.image}` : null
-    }));
+    const coffeesWithAbsoluteImageUrls = rows.map(coffee => {
+      const imageUrl = coffee.image && coffee.image.startsWith('http')
+        ? coffee.image
+        : coffee.image ? `${serverUrl}${coffee.image}` : null;
+      return { ...coffee, image: imageUrl };
+    });
     res.json(coffeesWithAbsoluteImageUrls);
   } catch (error) {
     res.status(500).json({
@@ -129,7 +134,12 @@ exports.findOne = async (req, res) => {
     }
     const coffee = rows[0];
     const serverUrl = `${req.protocol}://${req.get('host')}`;
-    coffee.image = coffee.image ? `${serverUrl}${coffee.image}` : null;
+    
+    const imageUrl = coffee.image && coffee.image.startsWith('http')
+      ? coffee.image
+      : coffee.image ? `${serverUrl}${coffee.image}` : null;
+    
+    coffee.image = imageUrl;
     res.json(coffee);
   } catch (error) {
     res.status(500).json({
@@ -200,7 +210,9 @@ exports.update = async (req, res) => {
 
       // สร้าง URL แบบเต็มสำหรับรูปภาพ
       const serverUrl = `${req.protocol}://${req.get('host')}`;
-      const fullImageUrl = imageUrl ? `${serverUrl}${imageUrl}` : null;
+      const fullImageUrl = imageUrl && imageUrl.startsWith('http')
+        ? imageUrl
+        : imageUrl ? `${serverUrl}${imageUrl}` : null;
 
       res.json({ 
         message: 'อัพเดทเมนูสำเร็จ',
