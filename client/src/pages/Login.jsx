@@ -41,12 +41,12 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        login(data.token, 'staff');
+        login(data.token, data.refreshToken);
         navigate(from, { replace: true });
       } else {
         setSnackbar({
           open: true,
-          message: data.message || 'เข้าสู่ระบบไม่สำเร็จ',
+          message: data.error || data.message || 'เข้าสู่ระบบไม่สำเร็จ',
           severity: 'error'
         });
       }
