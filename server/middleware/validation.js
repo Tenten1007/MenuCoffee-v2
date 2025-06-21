@@ -33,7 +33,7 @@ const validateCoffee = [
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('Category must be between 1 and 100 characters')
-    .matches(/^[a-zA-Z0-9\s-]+$/)
+    .matches(/^[a-zA-Z0-9\s\u0E00-\u0E7F-]+$/)
     .withMessage('Category contains invalid characters'),
   
   body('has_options')
