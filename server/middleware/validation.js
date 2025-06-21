@@ -42,6 +42,11 @@ const validateCoffee = [
     .isBoolean()
     .withMessage('has_options must be a boolean'),
   
+  body('base_price')
+    .optional({ checkFalsy: true })
+    .isFloat({ gt: -1 })
+    .withMessage('Base price must be a number greater than or equal to 0'),
+  
   body('menu_options')
     .optional()
     .isArray()
