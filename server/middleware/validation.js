@@ -26,8 +26,9 @@ const validateCoffee = [
     .withMessage('Name contains invalid characters'),
   
   body('price')
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
+    .optional({ checkFalsy: true })
+    .isFloat({ gt: -1 })
+    .withMessage('Price must be a number greater than or equal to 0'),
   
   body('category')
     .trim()
@@ -49,8 +50,28 @@ const validateCoffee = [
   
   body('menu_options')
     .optional()
-    .isArray()
-    .withMessage('menu_options must be an array'),
+    .custom((value, { req }) => {
+      const options = JSON.parse(value);
+      if (!Array.isArray(options)) {
+        throw new Error('menu_options must be an array');
+      }
+
+      for (const option of options) {
+        if (!option.option_type || !/^[a-zA-Z0-9\s-]+$/.test(option.option_type)) {
+          throw new Error('Invalid option_type in menu_options');
+        }
+        if (!option.option_name || !/^[a-zA-Z0-9\s\u0E00-\u0E7F'._()/-]+$/.test(option.option_name)) {
+          throw new Error('Invalid option_name in menu_options. It may contain invalid characters.');
+        }
+        if (typeof option.price_adjustment !== 'number') {
+          throw new Error('Invalid price_adjustment in menu_options');
+        }
+        if (typeof option.is_available !== 'boolean') {
+          throw new Error('Invalid is_available in menu_options');
+        }
+      }
+      return true;
+    }),
   
   body('menu_options.*.option_type')
     .optional()

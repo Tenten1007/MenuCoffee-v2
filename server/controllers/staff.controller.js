@@ -82,6 +82,11 @@ exports.login = async (req, res) => {
       role: user.role,
       iat: Math.floor(Date.now() / 1000)
     };
+    
+    if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+      console.error("JWT_SECRET or JWT_REFRESH_SECRET is not defined in .env file");
+      return res.status(500).json({ error: "Server configuration error: JWT secrets not found." });
+    }
 
     const token = jwt.sign(
       tokenPayload,
@@ -94,7 +99,7 @@ exports.login = async (req, res) => {
     // สร้าง refresh token
     const refreshToken = jwt.sign(
       { id: user.id, type: 'refresh' },
-      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+      process.env.JWT_REFRESH_SECRET,
       { 
         expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' 
       }
@@ -136,9 +141,14 @@ exports.refreshToken = async (req, res) => {
       });
     }
 
+    if (!process.env.JWT_REFRESH_SECRET) {
+      console.error("JWT_REFRESH_SECRET is not defined in .env file");
+      return res.status(500).json({ error: "Server configuration error: JWT secrets not found." });
+    }
+
     const decoded = jwt.verify(
       refreshToken, 
-      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET
+      process.env.JWT_REFRESH_SECRET
     );
 
     if (decoded.type !== 'refresh') {
