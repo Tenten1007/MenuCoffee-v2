@@ -87,6 +87,8 @@ const AddCoffee = () => {
   const [newOptionType, setNewOptionType] = useState({ value: '', label: '' });
   const [optionTypeDialogOpen, setOptionTypeDialogOpen] = useState(false);
 
+  const [error, setError] = useState(null);
+
   const { token } = useAuth();
 
   const handleChange = (e) => {
@@ -201,11 +203,8 @@ const AddCoffee = () => {
       data.append('image', imageFile);
     }
 
-    for (let pair of data.entries()) {
-      console.log(pair[0]+ ':', pair[1]);
-    }
-
     try {
+      setError(null); // Clear previous errors
       const response = await api.post('/api/coffees', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -216,17 +215,16 @@ const AddCoffee = () => {
       if (response.status === 201) {
         navigate('/menu');
       } else {
+        // This case might not be hit if server always returns error statuses
         throw new Error(response.data.message || 'เกิดข้อผิดพลาดในการเพิ่มเมนู');
       }
     } catch (error) {
       console.error('Error adding coffee:', error);
       if (error.response && error.response.data) {
-        // Log the detailed validation errors from the server
-        console.error('Server validation errors:', error.response.data);
-        const errorMsg = error.response.data.errors ? error.response.data.errors.map(e => e.msg).join(', ') : 'ข้อมูลไม่ถูกต้อง';
-        alert(`ไม่สามารถเพิ่มเมนูได้: ${errorMsg}`);
+        const errorMsg = error.response.data.details ? error.response.data.details.map(e => e.message).join(', ') : (error.response.data.message || 'ข้อมูลไม่ถูกต้อง');
+        setError(`ไม่สามารถเพิ่มเมนูได้: ${errorMsg}`);
       } else {
-        alert('ไม่สามารถเพิ่มเมนูได้ กรุณาลองใหม่อีกครั้ง');
+        setError('ไม่สามารถเพิ่มเมนูได้ กรุณาลองใหม่อีกครั้ง');
       }
     }
   };
@@ -267,46 +265,36 @@ const AddCoffee = () => {
           <Paper 
             elevation={0}
             sx={{ 
-              p: { xs: 2, sm: 3, md: 4 },
-              width: '100%',
-              maxWidth: { xs: '100%', sm: '600px', md: '800px' },
-              mx: 'auto',
-              borderRadius: 4,
-              background: 'rgba(255, 255, 255, 0.05)',
+              p: isMobile ? 2 : (isTablet ? 3 : 4),
+              borderRadius: '20px',
+              backgroundColor: 'rgba(40, 40, 40, 0.9)',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}
           >
-            <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
-              <Typography 
-                variant="h2" 
-                component="h1" 
-                gutterBottom
-                sx={{ 
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
-                  fontWeight: 'bold',
-                  color: '#ffffff',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  textAlign: { xs: 'center', sm: 'left' }
-                }}
-              >
-                เพิ่มเมนูใหม่
-              </Typography>
-              <Typography 
-                variant="subtitle1" 
-                sx={{ 
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  textAlign: { xs: 'center', sm: 'left' }
-                }}
-              >
-                กรอกข้อมูลด้านล่างเพื่อเพิ่มเมนูใหม่
-              </Typography>
-            </Box>
+            <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', color: '#FFF', letterSpacing: '1px' }}>
+              เพิ่มเมนูกาแฟใหม่
+            </Typography>
 
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={{ xs: 2, sm: 3, md: 4 }}>
+            {error && (
+              <Box my={2} p={2} sx={{ border: '1px solid', borderColor: 'error.main', color: 'error.main', borderRadius: '4px', background: 'rgba(255, 0, 0, 0.1)' }}>
+                <Typography variant="body1">{error}</Typography>
+              </Box>
+            )}
+
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                color: 'rgba(255, 255, 255, 0.7)',
+                textAlign: { xs: 'center', sm: 'left' }
+              }}
+            >
+              กรอกข้อมูลด้านล่างเพื่อเพิ่มเมนูใหม่
+            </Typography>
+
+            <form onSubmit={handleSubmit} noValidate>
+              <Stack spacing={isMobile ? 2 : 3}>
                 <TextField
                   required
                   fullWidth
