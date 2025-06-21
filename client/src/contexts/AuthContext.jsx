@@ -87,9 +87,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = (newToken, newRefreshToken) => {
     localStorage.setItem('token', newToken);
-    localStorage.setItem('refreshToken', newRefreshToken);
+    if (newRefreshToken) {
+      localStorage.setItem('refreshToken', newRefreshToken);
+      setRefreshToken(newRefreshToken);
+    }
     setToken(newToken);
-    setRefreshToken(newRefreshToken);
     setIsLoggedIn(true);
   };
 
@@ -99,6 +101,8 @@ export const AuthProvider = ({ children }) => {
     setToken('');
     setRefreshToken('');
     setIsLoggedIn(false);
+    // Redirect to home page after logout
+    window.location.href = '/';
   };
 
   // ตรวจสอบ token ทุก 1 นาที

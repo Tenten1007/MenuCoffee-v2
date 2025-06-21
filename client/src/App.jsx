@@ -13,7 +13,6 @@ import AddCoffee from './pages/AddCoffee';
 import EditCoffee from './pages/EditCoffee';
 import Staff from './pages/Staff';
 import OrderHistory from './pages/OrderHistory';
-import Login from './pages/Login';
 
 const theme = createTheme({
   palette: {
@@ -127,7 +126,6 @@ function App() {
               <Route path="/edit-coffee/:id" element={<EditCoffee />} />
               <Route path="/staff" element={<Staff />} />
               <Route path="/order-history" element={<OrderHistory />} />
-              <Route path="/login" element={<Login />} />
             </Routes>
           </Box>
         </Router>

@@ -84,7 +84,7 @@ const Home = () => {
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { isLoggedIn, login } = useAuth();
+  const { isLoggedIn, login, logout } = useAuth();
 
   useEffect(() => {
     fetchCoffees();
@@ -130,31 +130,61 @@ const Home = () => {
   };
 
   const handleAddToCart = async (coffee) => {
-    try {
-      setLoadingOptions(true);
-      setSelectedCoffee(coffee);
-      const response = await api.get(`/api/coffees/${coffee.id}/options`);
-      const options = response.data;
+    if (coffee.has_options) {
+      try {
+        setLoadingOptions(true);
+        setSelectedCoffee(coffee);
+        const response = await api.get(`/api/coffees/${coffee.id}/options`);
+        const options = response.data;
 
-      const groupedOptions = options.reduce((acc, option) => {
-        if (!acc[option.option_type]) {
-          acc[option.option_type] = [];
-        }
-        acc[option.option_type].push(option);
-        return acc;
-      }, {});
+        const groupedOptions = options.reduce((acc, option) => {
+          if (!acc[option.option_type]) {
+            acc[option.option_type] = [];
+          }
+          acc[option.option_type].push(option);
+          return acc;
+        }, {});
 
-      const initialSelectedOptions = {};
-      
-      setMenuOptions(groupedOptions);
-      setSelectedOptions(initialSelectedOptions);
-      setItemNote('');
-      setOptionDialogOpen(true);
-    } catch (err) {
-      console.error('Error fetching menu options:', err);
-      alert('ไม่สามารถดึงข้อมูลตัวเลือกได้');
-    } finally {
-      setLoadingOptions(false);
+        const initialSelectedOptions = {};
+        
+        setMenuOptions(groupedOptions);
+        setSelectedOptions(initialSelectedOptions);
+        setItemNote('');
+        setOptionDialogOpen(true);
+      } catch (err) {
+        console.error('Error fetching menu options:', err);
+        alert('ไม่สามารถดึงข้อมูลตัวเลือกได้');
+      } finally {
+        setLoadingOptions(false);
+      }
+    } else {
+      setIsSubmitting(true);
+      try {
+        const orderDetails = {
+          customer_name: customerName,
+          items: cart,
+          total_price: calculateTotal(),
+        };
+
+        await api.post('/api/orders', orderDetails);
+
+        setSnackbar({
+          open: true,
+          message: 'สร้างรายการสั่งซื้อสำเร็จ!',
+          severity: 'success',
+        });
+        setCart([]);
+        setCustomerName('');
+        setOrderDialogOpen(false);
+      } catch (err) {
+        setSnackbar({
+          open: true,
+          message: 'เกิดข้อผิดพลาดในการสร้างรายการสั่งซื้อ',
+          severity: 'error',
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -295,31 +325,18 @@ const Home = () => {
   };
 
   const handleStaffLogin = async () => {
-    if (isLoggedIn) {
-      navigate('/staff');
-      return;
-    }
-
     try {
-      const response = await api.post('/api/staff/login', {
-        username: staffCredentials.username,
-        password: staffCredentials.password
-      });
-      
-      if (response.data.token) {
-        login(response.data.token);
-        setStaffLoginOpen(false);
-        setStaffCredentials({ username: '', password: '' });
-        navigate('/staff');
-      } else {
-        throw new Error('Invalid response from server');
-      }
-    } catch (error) {
-      console.error('Error logging in:', error);
+      const response = await api.post('/api/staff/login', staffCredentials);
+      login(response.data.token, response.data.refreshToken);
+      setStaffLoginOpen(false);
+      setStaffCredentials({ username: '', password: '' });
+      navigate('/staff');
+    } catch (err) {
+      console.error('Staff login failed', err);
       setSnackbar({
         open: true,
         message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
-        severity: 'error'
+        severity: 'error',
       });
     }
   };
@@ -1013,184 +1030,55 @@ const Home = () => {
         </Drawer>
 
         {/* Staff Login Dialog */}
-        <Dialog
-          open={staffLoginOpen}
-          onClose={() => setStaffLoginOpen(false)}
-          maxWidth="xs"
-          fullWidth
-          PaperProps={{
-            sx: {
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(45,45,45,0.82) 100%)',
-              backdropFilter: 'blur(24px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-              border: '2.5px solid rgba(255, 215, 0, 0.25)',
-              borderRadius: '28px',
-              boxShadow: '0 8px 32px 0 rgba(34, 34, 34, 0.25), 0 1.5px 0 0 rgba(255,215,0,0.10)',
-              color: 'white',
-              m: { xs: '2vw', sm: 0 },
-              maxWidth: { xs: '95vw', sm: '80vw', md: '60vw' },
-              position: 'relative',
-              overflow: 'hidden',
-            }
-          }}
-        >
-          <DialogTitle
-            sx={{
-              color: '#FFD700',
-              fontWeight: 900,
-              fontSize: { xs: '2.1rem', sm: '2.3rem' },
-              textAlign: 'center',
-              letterSpacing: 1,
-              textShadow: '0 2px 12px rgba(0,0,0,0.22), 0 0px 32px #FFD70044',
-              zIndex: 1,
-              mb: 1
-            }}
-          >
-            Staff Login
+        <Dialog open={staffLoginOpen} onClose={() => setStaffLoginOpen(false)} fullWidth maxWidth="xs">
+          <DialogTitle sx={{ textAlign: 'center', pb: 0 }}>
+            <Lock sx={{ fontSize: 40, color: 'primary.main' }} />
+            <Typography variant="h5" component="div">สำหรับพนักงาน</Typography>
           </DialogTitle>
-          <DialogContent sx={{ p: { xs: '3vw', sm: '4vw' }, zIndex: 1 }}>
+          <DialogContent>
+            <DialogContentText sx={{ textAlign: 'center', mb: 2 }}>
+              กรุณาเข้าสู่ระบบเพื่อเข้าถึงส่วนจัดการ
+            </DialogContentText>
             <TextField
               autoFocus
               margin="dense"
-              label="Username"
+              id="username"
+              label="ชื่อผู้ใช้"
               type="text"
               fullWidth
+              variant="outlined"
               value={staffCredentials.username}
               onChange={(e) => setStaffCredentials({ ...staffCredentials, username: e.target.value })}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon sx={{ color: '#FFD700' }} />
-                  </InputAdornment>
-                ),
-                sx: {
-                  color: 'white',
-                  background: 'linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)',
-                  borderRadius: '16px',
-                  boxShadow: '0 2px 12px 0 rgba(255,215,0,0.08)',
-                  border: '1.5px solid rgba(255,215,0,0.18)',
-                  '& fieldset': { borderColor: 'rgba(255,215,0,0.25)' },
-                  '&:hover fieldset': { borderColor: '#FFD700' },
-                  '&.Mui-focused fieldset': { borderColor: '#FFD700' }
-                }
-              }}
-              InputLabelProps={{
-                sx: { color: '#FFD700', fontWeight: 700 }
-              }}
-              sx={{
-                mb: 3,
-                '& .MuiInputBase-input': {
-                  color: 'white',
-                  fontWeight: 600,
-                  fontSize: '1.1rem',
-                  textShadow: '0 1px 8px rgba(0,0,0,0.10)'
-                }
-              }}
+              onKeyPress={(e) => e.key === 'Enter' && handleStaffLogin()}
             />
             <TextField
               margin="dense"
-              label="Password"
+              id="password"
+              label="รหัสผ่าน"
               type={showPassword ? 'text' : 'password'}
               fullWidth
+              variant="outlined"
               value={staffCredentials.password}
               onChange={(e) => setStaffCredentials({ ...staffCredentials, password: e.target.value })}
+              onKeyPress={(e) => e.key === 'Enter' && handleStaffLogin()}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock sx={{ color: '#FFD700' }} />
-                  </InputAdornment>
-                ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowPassword((show) => !show)}
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
                       edge="end"
-                      sx={{ color: '#FFD700' }}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
-                sx: {
-                  color: 'white',
-                  background: 'linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%)',
-                  borderRadius: '16px',
-                  boxShadow: '0 2px 12px 0 rgba(255,215,0,0.08)',
-                  border: '1.5px solid rgba(255,215,0,0.18)',
-                  '& fieldset': { borderColor: 'rgba(255,215,0,0.25)' },
-                  '&:hover fieldset': { borderColor: '#FFD700' },
-                  '&.Mui-focused fieldset': { borderColor: '#FFD700' }
-                }
-              }}
-              InputLabelProps={{
-                sx: { color: '#FFD700', fontWeight: 700 }
-              }}
-              sx={{
-                mb: 2,
-                '& .MuiInputBase-input': {
-                  color: 'white',
-                  fontWeight: 600,
-                  fontSize: '1.1rem',
-                  textShadow: '0 1px 8px rgba(0,0,0,0.10)'
-                }
               }}
             />
           </DialogContent>
-          <DialogActions
-            sx={{
-              p: { xs: '3vw', sm: '4vw' },
-              gap: 2,
-              justifyContent: 'center',
-              zIndex: 1
-            }}
-          >
-            <Button
-              onClick={() => setStaffLoginOpen(false)}
-              sx={{
-                color: '#FFD700',
-                border: '1.5px solid #FFD700',
-                borderRadius: '12px',
-                fontWeight: 700,
-                px: 3,
-                py: 1,
-                background: 'rgba(255,255,255,0.10)',
-                boxShadow: '0 2px 8px 0 rgba(255,215,0,0.08)',
-                backdropFilter: 'blur(2px)',
-                transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.18)',
-                  borderColor: '#FFA000',
-                  color: '#FFA000',
-                  transform: 'scale(1.04)'
-                }
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleStaffLogin}
-              variant="contained"
-              sx={{
-                background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
-                color: '#1a1a1a',
-                fontWeight: 900,
-                fontSize: '1.1rem',
-                borderRadius: '12px',
-                px: 4,
-                py: 1.2,
-                boxShadow: '0 4px 24px 0 rgba(255,215,0,0.18)',
-                letterSpacing: 1,
-                transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
-                '&:hover': {
-                  background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)',
-                  color: '#222',
-                  transform: 'scale(1.04)',
-                  boxShadow: '0 8px 32px 0 rgba(255,215,0,0.22)'
-                }
-              }}
-            >
-              Login
-            </Button>
+          <DialogActions sx={{ p: '0 24px 24px' }}>
+            <Button onClick={() => setStaffLoginOpen(false)} fullWidth variant="outlined" color="secondary">ยกเลิก</Button>
+            <Button onClick={handleStaffLogin} fullWidth variant="contained" color="primary">เข้าสู่ระบบ</Button>
           </DialogActions>
         </Dialog>
 
