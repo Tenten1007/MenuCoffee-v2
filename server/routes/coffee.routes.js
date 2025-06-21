@@ -3,13 +3,12 @@ const router = express.Router();
 const coffeeController = require('../controllers/coffee.controller');
 const staffAuth = require('../middleware/staffAuth');
 const { validateCoffee, validateId } = require('../middleware/validation');
-const { upload, handleUploadError } = require('../middleware/upload.middleware');
+const { upload } = require('../config/cloudinary.config');
 
 // Create a new coffee (requires authentication)
 router.post('/', 
   staffAuth, 
   upload.single('image'),
-  handleUploadError,
   validateCoffee,
   coffeeController.create
 );
@@ -25,7 +24,6 @@ router.put('/:id',
   staffAuth, 
   validateId,
   upload.single('image'),
-  handleUploadError,
   validateCoffee,
   coffeeController.update
 );
