@@ -62,6 +62,8 @@ import Navbar, { NAVBAR_HEIGHT } from '../components/Navbar';
 const Home = () => {
   const navigate = useNavigate();
   const [coffees, setCoffees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filteredCoffees, setFilteredCoffees] = useState([]);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);

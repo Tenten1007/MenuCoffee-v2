@@ -35,19 +35,12 @@ export const AuthProvider = ({ children }) => {
   // ฟังก์ชันสำหรับ refresh token
   const refreshAccessToken = async (refreshTokenValue) => {
     try {
-      const response = await fetch('http://localhost:5000/api/staff/refresh-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          refreshToken: refreshTokenValue
-        })
+      const response = await api.post('/api/staff/refresh-token', {
+        refreshToken: refreshTokenValue,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newToken = data.token;
+      if (response.data && response.data.token) {
+        const newToken = response.data.token;
         
         localStorage.setItem('token', newToken);
         setToken(newToken);
