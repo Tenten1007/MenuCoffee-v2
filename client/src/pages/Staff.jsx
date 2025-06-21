@@ -30,7 +30,11 @@ import {
   Tooltip,
   Badge,
   DialogContentText,
-  CardActions
+  CardActions,
+  Select,
+  MenuItem,
+  AppBar,
+  Toolbar
 } from '@mui/material';
 import {
   Check as CheckIcon,
@@ -58,7 +62,7 @@ import io from 'socket.io-client';
 import Navbar from '../components/Navbar';
 import api from '../api'; // Import the centralized api instance
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const Staff = () => {
   const [orders, setOrders] = useState([]);
@@ -79,13 +83,13 @@ const Staff = () => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      navigate('/');
+      navigate('/login?from=/staff');
       return;
     }
     fetchOrders();
 
     // Connect to WebSocket server
-    socketRef.current = io(API_URL); // Use centralized API_URL
+    socketRef.current = io(API_BASE_URL); // Use centralized API_URL
 
     socketRef.current.on('connect', () => {
       console.log('Connected to WebSocket server');
