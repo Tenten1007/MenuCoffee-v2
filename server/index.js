@@ -24,6 +24,9 @@ const {
   notFoundHandler
 } = require('./middleware/security');
 
+// Import limiters
+const { apiLimiter, loginLimiter } = require('./middleware/limiters');
+
 // Import upload middleware
 const { upload, handleUploadError } = require('./middleware/upload.middleware');
 
@@ -61,19 +64,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Rate limiting
-const apiLimiter = createRateLimiter(
-  parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-  'Too many requests from this IP, please try again later.'
-);
-
-const loginLimiter = createRateLimiter(
-  parseInt(process.env.LOGIN_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  parseInt(process.env.LOGIN_RATE_LIMIT_MAX_REQUESTS) || 5,
-  'Too many login attempts, please try again later.'
-);
-
 // Slow down
 const speedLimiter = createSlowDown(
   15 * 60 * 1000, // 15 minutes
@@ -91,7 +81,6 @@ app.use(sanitizeInput);
 
 // Rate limiting
 app.use('/api/', apiLimiter);
-app.use('/api/staff/login', loginLimiter);
 app.use('/api/', speedLimiter);
 
 // กำหนด path ของโฟลเดอร์ uploads

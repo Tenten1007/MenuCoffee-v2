@@ -63,6 +63,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [coffees, setCoffees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [error, setError] = useState(null);
   const [filteredCoffees, setFilteredCoffees] = useState([]);
   const [cart, setCart] = useState([]);
@@ -677,7 +678,6 @@ const Home = () => {
                             background: 'linear-gradient(90deg, #FFA000 0%, #FFD700 100%)',
                             color: '#222',
                             transform: 'scale(1.04)',
-                            boxShadow: '0 6px 24px 0 rgba(255,215,0,0.28)',
                           }
                         }}
                       >

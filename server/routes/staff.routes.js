@@ -3,9 +3,10 @@ const router = express.Router();
 const staffController = require('../controllers/staff.controller');
 const staffAuth = require('../middleware/staffAuth');
 const { validateStaffLogin } = require('../middleware/validation');
+const { loginLimiter } = require('../middleware/limiters');
 
 // Public routes
-router.post('/login', validateStaffLogin, staffController.login);
+router.post('/login', loginLimiter, validateStaffLogin, staffController.login);
 router.post('/refresh-token', staffController.refreshToken);
 
 // Protected routes (require authentication)
