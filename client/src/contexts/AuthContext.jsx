@@ -11,14 +11,19 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
+      const storedToken = localStorage.getItem('token');
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      
+      if (storedToken && storedRefreshToken) {
         try {
           // You might want to verify the token with the backend here
           // For simplicity, we'll just set the user as logged in
-          const response = await api.post('/api/staff/refresh-token');
-          if (response.data.token) {
-            login(response.data.token);
+          const response = await api.post('/api/staff/refresh-token', { refreshToken: storedRefreshToken });
+          if (response.data && response.data.token) {
+            const newToken = response.data.token;
+            localStorage.setItem('token', newToken);
+            setToken(newToken);
+            setIsLoggedIn(true);
           } else {
             logout();
           }
@@ -33,10 +38,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // ฟังก์ชันสำหรับ refresh token
-  const refreshAccessToken = async (refreshTokenValue) => {
+  const refreshAccessToken = async () => {
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    if (!storedRefreshToken) {
+      logout();
+      return;
+    }
+
     try {
       const response = await api.post('/api/staff/refresh-token', {
-        refreshToken: refreshTokenValue,
+        refreshToken: storedRefreshToken,
       });
 
       if (response.data && response.data.token) {
@@ -65,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       
       // ถ้า token จะหมดอายุใน 5 นาที ให้ refresh
       if (payload.exp - currentTime < 300) {
-        refreshAccessToken(refreshToken);
+        refreshAccessToken();
       }
       
       return payload.exp > currentTime;
@@ -92,16 +103,23 @@ export const AuthProvider = ({ children }) => {
 
   // ตรวจสอบ token ทุก 1 นาที
   useEffect(() => {
+    let interval;
     if (isLoggedIn && token) {
-      const interval = setInterval(() => {
-        if (!checkTokenExpiration()) {
+      interval = setInterval(() => {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Date.now() / 1000;
+        
+        // Refresh if token expires in the next 5 minutes
+        if (payload.exp - currentTime < 300) {
+          refreshAccessToken();
+        } else if (payload.exp < currentTime) {
+          // Logout if token is already expired
           logout();
         }
-      }, 60000); // ตรวจสอบทุก 1 นาที
-
-      return () => clearInterval(interval);
+      }, 60000); // Check every 60 seconds
     }
-  }, [isLoggedIn, token, refreshToken]);
+    return () => clearInterval(interval);
+  }, [isLoggedIn, token]);
 
   return (
     <AuthContext.Provider value={{ 
