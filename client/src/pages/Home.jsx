@@ -76,6 +76,7 @@ const Home = () => {
   const [menuOptions, setMenuOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [optionDialogOpen, setOptionDialogOpen] = useState(false);
+  const [itemNote, setItemNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const theme = useTheme();
@@ -142,6 +143,7 @@ const Home = () => {
       
       setMenuOptions(groupedOptions);
       setSelectedOptions(initialSelectedOptions);
+      setItemNote('');
       setSelectedCoffee(coffee);
       setOptionDialogOpen(true);
     } catch (error) {
@@ -176,6 +178,14 @@ const Home = () => {
     setCart(prev => prev.map((item, i) => i === index ? { ...item, quantity: newQty } : item));
   };
 
+  const handleNoteChange = (index, newNote) => {
+    setCart(prevCart =>
+      prevCart.map((item, i) =>
+        i === index ? { ...item, note: newNote } : item
+      )
+    );
+  };
+
   const handleConfirmAddToCart = () => {
     // ตรวจสอบว่าผู้ใช้ได้เลือกตัวเลือกครบทุกประเภทหรือไม่
     const allTypesSelected = Object.keys(menuOptions).every(type => selectedOptions[type]);
@@ -190,7 +200,8 @@ const Home = () => {
       price: selectedCoffee.price,
       quantity: 1,
       totalPrice: calculateTotalPrice(),
-      selectedOptions: selectedOptions
+      selectedOptions: selectedOptions,
+      note: itemNote
     };
     // เช็คว่ามีสินค้า+options เดิมใน cart หรือยัง
     setCart(prev => {
@@ -213,6 +224,7 @@ const Home = () => {
     setOptionDialogOpen(false);
     setSelectedCoffee(null);
     setSelectedOptions({});
+    setItemNote('');
     setSnackbar({
       open: true,
       message: 'เพิ่มลงตะกร้าเรียบร้อยแล้ว',
@@ -757,7 +769,7 @@ const Home = () => {
             <Divider sx={{ mb: '2vh', borderColor: 'rgba(255,255,255,0.1)' }} />
             
             {/* Content Area */}
-            <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
               {cart.length === 0 ? (
                 <Box sx={{ 
                   textAlign: 'center', 
@@ -789,90 +801,90 @@ const Home = () => {
                 </Box>
               ) : (
                 <List sx={{ 
-                  maxHeight: { xs: '45vh', sm: '55vh' }, 
-                  overflow: 'auto',
                   mb: '2vh'
                 }}>
                   {cart.map((item, index) => (
-                    <ListItem key={index} sx={{ 
-                      py: { xs: '2vh', sm: '2.5vh' }, 
+                    <ListItem key={index} sx={{
+                      py: { xs: '2vh', sm: '2.5vh' },
                       px: 0,
                       borderBottom: '1px solid rgba(255,255,255,0.1)',
-                      cursor: 'pointer',
-                      transition: 'all 0.18s cubic-bezier(.4,2,.3,1)',
-                      '&:hover': {
-                        background: 'linear-gradient(90deg, #FFD700 0%, #FFA000 100%)',
-                        color: '#222',
-                        transform: 'scale(1.03)',
-                        boxShadow: '0 2px 12px 0 rgba(255,215,0,0.13)',
-                        '& .MuiListItemSecondaryAction-root, & .MuiIconButton-root': {
-                          color: '#FFA000',
-                          transform: 'scale(1.15)',
-                          transition: 'all 0.18s cubic-bezier(.4,2,.3,1)'
-                        }
-                      }
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
                     }}>
-                      <ListItemText
-                        primary={
-                          <Typography sx={{ 
-                            color: 'white',
-                            fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
-                            fontWeight: 'bold',
-                            mb: '0.5vh'
-                          }}>
-                            {item.name}
-                          </Typography>
-                        }
-                        secondary={
-                          <>
-                            <Typography component="span" sx={{ 
-                              color: '#FFD700',
-                              fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%'}}>
+                        <ListItemText
+                          primary={
+                            <Typography sx={{ 
+                              color: 'white',
+                              fontSize: { xs: 'clamp(1rem, 3.5vw, 1.2rem)', sm: 'clamp(1.1rem, 2.5vw, 1.2rem)' },
                               fontWeight: 'bold',
-                              display: 'block'
+                              mb: '0.5vh'
                             }}>
-                              ฿{item.totalPrice} x {item.quantity}
+                              {item.name}
                             </Typography>
-                            {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                          }
+                          secondary={
+                            <>
                               <Typography component="span" sx={{ 
-                                color: 'rgba(255,255,255,0.6)',
-                                fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
-                                mt: '0.5vh',
+                                color: '#FFD700',
+                                fontSize: { xs: 'clamp(0.9rem, 3vw, 1.1rem)', sm: 'clamp(1rem, 2.5vw, 1.1rem)' },
+                                fontWeight: 'bold',
                                 display: 'block'
                               }}>
-                                {Object.values(item.selectedOptions).map(option => option.option_name || option.name).join(', ')}
+                                ฿{item.totalPrice} x {item.quantity}
                               </Typography>
-                            )}
-                          </>
-                        }
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          onClick={() => handleUpdateCartQuantity(index, item.quantity - 1)}
-                          sx={{ color: '#FFD700', mr: 1 }}
-                          size="small"
-                        >
-                          <RemoveIcon />
-                        </IconButton>
-                        <Typography sx={{ color: 'white', mx: 1, minWidth: 24, display: 'inline-block', textAlign: 'center' }}>
-                          {item.quantity}
-                        </Typography>
-                        <IconButton
-                          onClick={() => handleUpdateCartQuantity(index, item.quantity + 1)}
-                          sx={{ color: '#FFD700', ml: 1 }}
-                          size="small"
-                        >
-                          <AddIcon />
-                        </IconButton>
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleRemoveFromCart(index)}
-                          sx={{ color: '#ff6b6b', ml: 1 }}
-                          size="small"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
+                              {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                                <Typography component="span" sx={{ 
+                                  color: 'rgba(255,255,255,0.6)',
+                                  fontSize: { xs: 'clamp(0.8rem, 2.5vw, 0.95rem)', sm: 'clamp(0.85rem, 2vw, 0.95rem)' },
+                                  mt: '0.5vh',
+                                  display: 'block'
+                                }}>
+                                  {Object.values(item.selectedOptions).map(option => option.option_name || option.name).join(', ')}
+                                </Typography>
+                              )}
+                              {item.note && (
+                                <Typography component="span" sx={{ 
+                                  color: 'rgba(255,255,255,0.8)',
+                                  fontSize: '0.85rem',
+                                  fontStyle: 'italic',
+                                  mt: 0.5,
+                                  display: 'block'
+                                }}>
+                                  "{item.note}"
+                                </Typography>
+                              )}
+                            </>
+                          }
+                        />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            onClick={() => handleUpdateCartQuantity(index, item.quantity - 1)}
+                            sx={{ color: '#FFD700', mr: 1 }}
+                            size="small"
+                          >
+                            <RemoveIcon />
+                          </IconButton>
+                          <Typography sx={{ color: 'white', mx: 1, minWidth: 24, display: 'inline-block', textAlign: 'center' }}>
+                            {item.quantity}
+                          </Typography>
+                          <IconButton
+                            onClick={() => handleUpdateCartQuantity(index, item.quantity + 1)}
+                            sx={{ color: '#FFD700', ml: 1 }}
+                            size="small"
+                          >
+                            <AddIcon />
+                          </IconButton>
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleRemoveFromCart(index)}
+                            sx={{ color: '#ff6b6b', ml: 1 }}
+                            size="small"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </Box>
                     </ListItem>
                   ))}
                 </List>
@@ -1327,6 +1339,32 @@ const Home = () => {
                 </Box>
               ))}
             </Box>
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="เพิ่มหมายเหตุ"
+              placeholder="เช่น หวานน้อยพิเศษ"
+              value={itemNote}
+              onChange={(e) => setItemNote(e.target.value)}
+              sx={{ 
+                mt: 3,
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  borderRadius: '12px',
+                  '& fieldset': { borderColor: 'rgba(255,255,255,0.2)', borderRadius: '12px' },
+                  '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+                  '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  opacity: 1,
+                }
+              }}
+            />
           </DialogContent>
           <DialogActions sx={{ 
             p: { xs: '3vw', sm: '4vw' },
