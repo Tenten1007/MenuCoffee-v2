@@ -9,8 +9,22 @@ const { Server } = require('socket.io');
 const { createInitialStaff } = require('./controllers/staff.controller');
 const staffController = require('./controllers/staff.controller');
 const bcrypt = require('bcrypt');
-const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
+
+// Import security middleware
+const {
+  createRateLimiter,
+  createSlowDown,
+  sanitizeInput,
+  securityHeaders,
+  validateFileUpload,
+  errorHandler,
+  notFoundHandler
+} = require('./middleware/security');
+
+// Import upload middleware
+const { upload, handleUploadError } = require('./middleware/upload.middleware');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -18,18 +32,18 @@ const port = process.env.PORT || 5000;
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
+    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
   }
 });
 
 app.set('socketio', io);
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security headers
+app.use(securityHeaders);
 
-// CORS config
+// CORS configuration
 const allowedOrigins = [process.env.CLIENT_ORIGIN || 'http://localhost:5173'];
 app.use(cors({
   origin: function(origin, callback) {
@@ -41,55 +55,90 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Rate limit config (100 requests/15min per IP)
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.'
-});
+// Rate limiting
+const apiLimiter = createRateLimiter(
+  parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+  parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  'Too many requests from this IP, please try again later.'
+);
+
+const loginLimiter = createRateLimiter(
+  parseInt(process.env.LOGIN_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+  parseInt(process.env.LOGIN_RATE_LIMIT_MAX_REQUESTS) || 5,
+  'Too many login attempts, please try again later.'
+);
+
+// Slow down
+const speedLimiter = createSlowDown(
+  15 * 60 * 1000, // 15 minutes
+  100, // delay after 100 requests
+  500 // add 500ms delay per request after 100
+);
+
+// Middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser(process.env.COOKIE_SECRET || 'default-secret'));
+
+// Input sanitization
+app.use(sanitizeInput);
+
+// Rate limiting
 app.use('/api/', apiLimiter);
+app.use('/api/staff/login', loginLimiter);
+app.use('/api/', speedLimiter);
 
 // กำหนด path ของโฟลเดอร์ uploads
 const uploadsDir = path.join(__dirname, 'uploads');
 
-// Multer configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir);
-    }
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage: storage });
-
 // ตั้งค่า static files หลังจากกำหนด path ของ uploads
-app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', express.static(uploadsDir, {
+  setHeaders: (res, path) => {
+    // Set security headers for static files
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('X-Frame-Options', 'DENY');
+  }
+}));
 
 // Routes
 app.use('/api/coffees', require('./routes/coffee.routes'));
 app.use('/api/orders', require('./routes/order.routes'));
 app.use('/api/staff', require('./routes/staff.routes'));
 
-// Upload route
-app.post('/api/upload', upload.single('image'), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+// Upload route with enhanced security
+app.post('/api/upload', 
+  upload.single('image'), 
+  validateFileUpload,
+  handleUploadError,
+  (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+      
+      res.json({ 
+        success: true,
+        url: `${process.env.CLIENT_ORIGIN || 'http://localhost:5000'}/uploads/${req.file.filename}` 
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ error: 'File upload failed' });
     }
-    res.json({ 
-      url: `http://localhost:5000/uploads/${req.file.filename}` 
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
+);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // สร้าง connection pool
@@ -103,73 +152,42 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// ฟังก์ชันสำหรับสร้างฐานข้อมูลและตาราง
-/*
-async function initializeDatabase() {
-  try {
-    // สร้างฐานข้อมูล
-    await pool.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || 'coffee_menu_db'}`);
-    console.log('Database created or already exists');
-
-    // ใช้ฐานข้อมูล
-    await pool.query(`USE ${process.env.DB_NAME || 'coffee_menu_db'}`);
-
-    // อ่านไฟล์ SQL
-    const initSqlPath = path.join(__dirname, 'db', 'init.sql');
-    const sql = fs.readFileSync(initSqlPath, 'utf8');
-
-    // แยกคำสั่ง SQL และรันทุกคำสั่ง
-    const statements = sql
-      .split(';')
-      .filter(stmt => stmt.trim());
-    
-    for (const statement of statements) {
-      if (statement.trim()) {
-        try {
-          await pool.query(statement);
-        } catch (error) {
-          console.error('Error executing SQL statement:', error);
-          console.error('Statement:', statement);
-        }
-      }
-    }
-    console.log('Database schema and initial data created successfully');
-
-    // ตรวจสอบว่ามีพนักงานในระบบหรือไม่
-    try {
-      const [staff] = await pool.query('SELECT COUNT(*) as count FROM staff');
-      if (staff[0].count === 0) {
-        console.log('Creating initial staff...');
-        await createInitialStaff();
-        console.log('Initial staff created');
-      } else {
-        console.log('Staff already exist, skipping initial staff creation');
-      }
-    } catch (error) {
-      console.error('Error checking staff table:', error);
-      throw error;
-    }
-  } catch (error) {
-    console.error('Error initializing database:', error);
-    throw error;
-  }
-}
-*/
-
-// เรียกใช้ฟังก์ชันเริ่มต้นฐานข้อมูล
-/*
-initializeDatabase()
-  .then(() => {
-    console.log('Database initialization completed');
+// Test database connection
+pool.getConnection()
+  .then(connection => {
+    console.log('Database connected successfully');
+    connection.release();
   })
-  .catch(error => {
-    console.error('Failed to initialize database:', error);
+  .catch(err => {
+    console.error('Database connection failed:', err);
     process.exit(1);
   });
-*/
+
+// Error handling middleware (must be last)
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 httpServer.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Client Origin: ${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  httpServer.close(() => {
+    console.log('Process terminated');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  httpServer.close(() => {
+    console.log('Process terminated');
+    process.exit(0);
+  });
 });
 
 // --- HTTPS Example (for production) ---
