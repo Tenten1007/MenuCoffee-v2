@@ -51,23 +51,42 @@ const validateCoffee = [
   body('menu_options')
     .optional()
     .custom((value, { req }) => {
-      const options = JSON.parse(value);
+      // If has_options is not true, we don't need to validate menu_options
+      if (req.body.has_options !== 'true' && req.body.has_options !== true) {
+        return true;
+      }
+      
+      if (!value) {
+        // If has_options is true, menu_options can be an empty array but not missing
+        return true;
+      }
+      
+      let options;
+      try {
+        options = JSON.parse(value);
+      } catch (e) {
+        throw new Error('menu_options must be a valid JSON string');
+      }
+
       if (!Array.isArray(options)) {
-        throw new Error('menu_options must be an array');
+        throw new Error('menu_options must be an array of objects');
       }
 
       for (const option of options) {
-        if (!option.option_type || !/^[a-zA-Z0-9\s-]+$/.test(option.option_type)) {
+        if (typeof option !== 'object' || option === null) {
+          throw new Error('Each item in menu_options must be an object');
+        }
+        if (!option.option_type || typeof option.option_type !== 'string' || !/^[a-zA-Z0-9\s-]+$/.test(option.option_type)) {
           throw new Error('Invalid option_type in menu_options');
         }
-        if (!option.option_name || !/^[a-zA-Z0-9\s\u0E00-\u0E7F'._()/-]+$/.test(option.option_name)) {
+        if (!option.option_name || typeof option.option_name !== 'string' || !/^[a-zA-Z0-9\s\u0E00-\u0E7F'._()/-]+$/.test(option.option_name)) {
           throw new Error('Invalid option_name in menu_options. It may contain invalid characters.');
         }
-        if (typeof option.price_adjustment !== 'number') {
-          throw new Error('Invalid price_adjustment in menu_options');
+        if (option.price_adjustment === undefined || typeof option.price_adjustment !== 'number') {
+          throw new Error('Invalid or missing price_adjustment in menu_options');
         }
-        if (typeof option.is_available !== 'boolean') {
-          throw new Error('Invalid is_available in menu_options');
+        if (option.is_available === undefined || typeof option.is_available !== 'boolean') {
+          throw new Error('Invalid or missing is_available in menu_options');
         }
       }
       return true;
