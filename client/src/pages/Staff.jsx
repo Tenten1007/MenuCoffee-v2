@@ -130,43 +130,21 @@ const Staff = () => {
         logout();
         return;
       }
-
-      const response = await api.get('/api/orders', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.status === 401) {
-        logout();
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      // Use the centralized api instance
+      const response = await api.get('/api/orders'); 
+      const data = response.data; // with axios, data is on response.data
       if (Array.isArray(data)) {
-        console.log('Orders fetched from server:', data);
         setOrders(data);
       } else {
         console.error('Invalid data format:', data);
         setOrders([]);
-        setSnackbar({
-          open: true,
-          message: 'Invalid data format received from server',
-          severity: 'error'
-        });
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
+      if (error.response && error.response.status === 401) {
+        logout();
+      }
       setOrders([]);
-      setSnackbar({
-        open: true,
-        message: 'Failed to fetch orders',
-        severity: 'error'
-      });
     }
   };
 
@@ -177,29 +155,14 @@ const Staff = () => {
         logout();
         return;
       }
-
-      const response = await api.put(`/api/orders/${orderId}`, { status: newStatus }, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.status === 401) {
-        logout();
-        return;
-      }
-
-      if (response.ok) {
-        setSnackbar({
-          open: true,
-          message: 'อัปเดตสถานะคำสั่งซื้อสำเร็จ',
-          severity: 'success'
-        });
-      } else {
-        throw new Error('อัปเดตสถานะคำสั่งซื้อไม่สำเร็จ');
-      }
+      // Use the centralized api instance
+      await api.put(`/api/orders/${orderId}`, { status: newStatus }); 
+      // UI will be updated by the socket event, no need to show snackbar here
     } catch (error) {
       console.error('Error updating order status:', error);
+      if (error.response && error.response.status === 401) {
+        logout();
+      }
       setSnackbar({
         open: true,
         message: 'อัปเดตสถานะคำสั่งซื้อไม่สำเร็จ',
