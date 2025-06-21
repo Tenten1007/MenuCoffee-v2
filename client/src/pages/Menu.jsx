@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { api } from '../api';
 import { 
   Container, 
   Typography, 
@@ -25,7 +26,6 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 const Menu = () => {

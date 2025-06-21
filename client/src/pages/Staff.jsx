@@ -60,7 +60,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import io from 'socket.io-client';
 import Navbar from '../components/Navbar';
-import api from '../api'; // Import the centralized api instance
+import { api } from '../api'; // Use named import
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 

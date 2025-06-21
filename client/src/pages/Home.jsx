@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { api } from '../api';
 import {
   Container,
   Typography,
@@ -55,7 +56,6 @@ import {
   Lock
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar, { NAVBAR_HEIGHT } from '../components/Navbar';
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api'; // Import the centralized api instance
+import { api } from '../api'; // Use named import
 import {
   Container,
   Typography,

@@ -10,7 +10,7 @@ import {
   Alert
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import api from '../api'; // Import the centralized api instance
+import { api } from '../api';
 import { AuthContext } from '../contexts/AuthContext';
 
 const Login = () => {
@@ -24,6 +24,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useContext(AuthContext);
+  const [error, setError] = useState('');
 
   // Get the page the user was trying to access before being redirected
   const from = location.state?.from?.pathname || '/staff';

@@ -40,7 +40,7 @@ import {
   Layers,
   Straighten
 } from '@mui/icons-material';
-import api from '../api';
+import { api } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 const EditCoffee = () => {
