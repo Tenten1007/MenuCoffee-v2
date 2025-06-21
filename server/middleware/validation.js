@@ -85,8 +85,8 @@ const validateCoffee = [
         if (option.price_adjustment === undefined || typeof option.price_adjustment !== 'number') {
           throw new Error('Invalid or missing price_adjustment in menu_options');
         }
-        if (option.is_available === undefined || typeof option.is_available !== 'boolean') {
-          throw new Error('Invalid or missing is_available in menu_options');
+        if (option.is_available === undefined || (typeof option.is_available !== 'boolean' && option.is_available !== 0 && option.is_available !== 1)) {
+          throw new Error('Invalid or missing is_available in menu_options. Must be a boolean, 0, or 1.');
         }
       }
       return true;
