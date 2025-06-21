@@ -121,8 +121,8 @@ const Home = () => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(coffee => 
-        coffee.name.toLowerCase().includes(query) ||
-        coffee.description.toLowerCase().includes(query)
+        (coffee.name && coffee.name.toLowerCase().includes(query)) ||
+        (coffee.description && coffee.description.toLowerCase().includes(query))
       );
     }
     
