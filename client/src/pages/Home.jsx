@@ -1030,34 +1030,60 @@ const Home = () => {
         </Drawer>
 
         {/* Staff Login Dialog */}
-        <Dialog open={staffLoginOpen} onClose={() => setStaffLoginOpen(false)} fullWidth maxWidth="xs">
-          <DialogTitle sx={{ textAlign: 'center', pb: 0 }}>
-            <Lock sx={{ fontSize: 40, color: 'primary.main' }} />
-            <Typography variant="h5" component="div">สำหรับพนักงาน</Typography>
+        <Dialog
+          open={staffLoginOpen}
+          onClose={() => setStaffLoginOpen(false)}
+          PaperProps={{
+            sx: {
+              borderRadius: '20px',
+              background: 'rgba(30, 30, 30, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 215, 0, 0.2)',
+              boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+            },
+          }}
+        >
+          <DialogTitle sx={{ textAlign: 'center', color: '#FFD700', pt: 3, pb: 1 }}>
+            <Lock sx={{ verticalAlign: 'middle', mr: 1, fontSize: '2rem' }} />
+            <Typography variant="h4" component="span" sx={{ fontWeight: 'bold', verticalAlign: 'middle' }}>
+              Staff Login
+            </Typography>
           </DialogTitle>
-          <DialogContent>
-            <DialogContentText sx={{ textAlign: 'center', mb: 2 }}>
-              กรุณาเข้าสู่ระบบเพื่อเข้าถึงส่วนจัดการ
-            </DialogContentText>
+          <DialogContent sx={{ p: 4 }}>
             <TextField
               autoFocus
-              margin="dense"
+              margin="normal"
               id="username"
-              label="ชื่อผู้ใช้"
+              label="Username"
               type="text"
               fullWidth
-              variant="outlined"
+              variant="filled"
               value={staffCredentials.username}
               onChange={(e) => setStaffCredentials({ ...staffCredentials, username: e.target.value })}
               onKeyPress={(e) => e.key === 'Enter' && handleStaffLogin()}
+              sx={{
+                '& .MuiFilledInput-root': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: '8px',
+                  '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                  },
+                  '&.Mui-focused': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 215, 0, 0.7)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                input: { color: 'white' }
+              }}
             />
             <TextField
-              margin="dense"
+              margin="normal"
               id="password"
-              label="รหัสผ่าน"
+              label="Password"
               type={showPassword ? 'text' : 'password'}
               fullWidth
-              variant="outlined"
+              variant="filled"
               value={staffCredentials.password}
               onChange={(e) => setStaffCredentials({ ...staffCredentials, password: e.target.value })}
               onKeyPress={(e) => e.key === 'Enter' && handleStaffLogin()}
@@ -1068,17 +1094,64 @@ const Home = () => {
                       aria-label="toggle password visibility"
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
+                      sx={{ color: 'rgba(255, 215, 0, 0.7)' }}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
+              sx={{
+                mt: 2,
+                '& .MuiFilledInput-root': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: '8px',
+                   '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                  },
+                  '&.Mui-focused': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  },
+                },
+                 '& .MuiInputLabel-root': { color: 'rgba(255, 215, 0, 0.7)' },
+                '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                'input': { color: 'white' }
+              }}
             />
           </DialogContent>
-          <DialogActions sx={{ p: '0 24px 24px' }}>
-            <Button onClick={() => setStaffLoginOpen(false)} fullWidth variant="outlined" color="secondary">ยกเลิก</Button>
-            <Button onClick={handleStaffLogin} fullWidth variant="contained" color="primary">เข้าสู่ระบบ</Button>
+          <DialogActions sx={{ p: '0 32px 32px', display: 'flex', gap: 2 }}>
+            <Button 
+              onClick={() => setStaffLoginOpen(false)} 
+              fullWidth 
+              variant="outlined"
+              sx={{ 
+                  color: 'rgba(255, 215, 0, 0.7)',
+                  borderColor: 'rgba(255, 215, 0, 0.5)',
+                  borderRadius: '8px',
+                  '&:hover': {
+                      borderColor: '#FFD700',
+                      backgroundColor: 'rgba(255, 215, 0, 0.1)'
+                  }
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleStaffLogin} 
+              fullWidth 
+              variant="contained"
+              sx={{
+                  background: 'linear-gradient(45deg, #FFB300 30%, #FFD700 90%)',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                   '&:hover': {
+                      background: 'linear-gradient(45deg, #FFD700 30%, #FFB300 90%)',
+                  }
+              }}
+            >
+              Login
+            </Button>
           </DialogActions>
         </Dialog>
 
