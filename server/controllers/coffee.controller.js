@@ -60,7 +60,7 @@ exports.create = async (req, res) => {
             await connection.query(
               `INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) 
                VALUES (?, ?, ?, ?, ?)`,
-              [coffeeId, option.option_type.trim(), option.option_name.trim(), Number(option.price_adjustment) || 0, option.is_available === true ? 1 : 0]
+              [coffeeId, option.option_type.trim(), option.option_name.trim(), Number(option.price_adjustment) || 0, (option.is_available === true || option.is_available === 1) ? 1 : 0]
             );
           }
         }
@@ -155,27 +155,30 @@ exports.update = async (req, res) => {
        WHERE id = ?`,
       [safeName, parseFloat(price), parseFloat(base_price) || parseFloat(price), safeCategory, imageUrl, has_options === 'true' || has_options === true ? 1 : 0, id]
     );
+    
+    // Only update menu options if they are provided in the request body
+    if (menu_options !== undefined) {
+      await connection.query('DELETE FROM menu_options WHERE coffee_id = ?', [id]);
 
-    await connection.query('DELETE FROM menu_options WHERE coffee_id = ?', [id]);
-
-    if ((has_options === 'true' || has_options === true) && menu_options) {
-      let options;
-       try {
-        options = typeof menu_options === 'string' ? JSON.parse(menu_options) : menu_options;
-        if (Array.isArray(options)) {
-          for (const option of options) {
-            if (!option.option_type || !option.option_name) continue;
-            await connection.query(
-              `INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) 
-               VALUES (?, ?, ?, ?, ?)`,
-              [id, option.option_type.trim(), option.option_name.trim(), Number(option.price_adjustment) || 0, option.is_available === true ? 1 : 0]
-            );
+      if ((has_options === 'true' || has_options === true) && menu_options) {
+        let options;
+         try {
+          options = typeof menu_options === 'string' ? JSON.parse(menu_options) : menu_options;
+          if (Array.isArray(options)) {
+            for (const option of options) {
+              if (!option.option_type || !option.option_name) continue;
+              await connection.query(
+                `INSERT INTO menu_options (coffee_id, option_type, option_name, price_adjustment, is_available) 
+                 VALUES (?, ?, ?, ?, ?)`,
+                [id, option.option_type.trim(), option.option_name.trim(), Number(option.price_adjustment) || 0, (option.is_available === true || option.is_available === 1) ? 1 : 0]
+              );
+            }
           }
+        } catch (e) {
+          await connection.rollback();
+          console.error("Error parsing menu_options:", e);
+          return res.status(400).json({ message: 'รูปแบบตัวเลือกไม่ถูกต้อง' });
         }
-      } catch (e) {
-        await connection.rollback();
-        console.error("Error parsing menu_options:", e);
-        return res.status(400).json({ message: 'รูปแบบตัวเลือกไม่ถูกต้อง' });
       }
     }
 
