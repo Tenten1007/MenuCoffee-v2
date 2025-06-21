@@ -296,3 +296,8 @@ mysql -u menucoffee_user -p coffee_menu_db < backup_file.sql
 
 **Last Updated**: December 2024
 **Version**: 1.0 
+
+npm install -g mkcert 
+
+mkcert -install
+mkcert localhost 
