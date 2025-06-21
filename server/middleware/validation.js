@@ -38,6 +38,7 @@ const validateCoffee = [
   
   body('has_options')
     .optional()
+    .toBoolean()
     .isBoolean()
     .withMessage('has_options must be a boolean'),
   
