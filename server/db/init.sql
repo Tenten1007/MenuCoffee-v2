@@ -1,7 +1,3 @@
--- Create database
-CREATE DATABASE IF NOT EXISTS coffee_menu_db;
-USE coffee_menu_db;
-
 -- Create tables
 CREATE TABLE IF NOT EXISTS staff (
     id INT AUTO_INCREMENT PRIMARY KEY,
