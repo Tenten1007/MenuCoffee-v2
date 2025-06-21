@@ -27,8 +27,7 @@ const {
 // Import limiters
 const { apiLimiter, loginLimiter } = require('./middleware/limiters');
 
-// Import upload middleware
-const { upload, handleUploadError } = require('./middleware/upload.middleware');
+
 
 const app = express();
 const port = process.env.PORT || 5000;
