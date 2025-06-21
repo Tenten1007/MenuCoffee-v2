@@ -1,14 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const mysql = require('mysql2/promise');
 const http = require('http');
 const { Server } = require('socket.io');
-const { createInitialStaff } = require('./controllers/staff.controller');
 const staffController = require('./controllers/staff.controller');
-const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const db = require('./config/db.config');
 require('dotenv').config();
@@ -19,15 +13,12 @@ const {
   createSlowDown,
   sanitizeInput,
   securityHeaders,
-  validateFileUpload,
   errorHandler,
   notFoundHandler
 } = require('./middleware/security');
 
 // Import limiters
 const { apiLimiter, loginLimiter } = require('./middleware/limiters');
-
-
 
 const app = express();
 const port = process.env.PORT || 5000;
