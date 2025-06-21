@@ -80,12 +80,15 @@ exports.create = async (req, res) => {
       }
 
       await connection.commit();
+      
+      const serverUrl = `${req.protocol}://${req.get('host')}`;
+      
       res.status(201).json({ 
         id: coffeeId,
         name: safeName,
         price,
         category: safeCategory,
-        image: `http://localhost:${process.env.PORT || 5000}${imageUrl}`,
+        image: `${serverUrl}${imageUrl}`,
         has_options: has_options ? 1 : 0
       });
     } catch (error) {
@@ -103,10 +106,11 @@ exports.create = async (req, res) => {
 // Get all coffees
 exports.findAll = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM coffees');
+    const [rows] = await pool.query('SELECT * FROM coffees ORDER BY created_at DESC');
+    const serverUrl = `${req.protocol}://${req.get('host')}`;
     const coffeesWithAbsoluteImageUrls = rows.map(coffee => ({
       ...coffee,
-      image: coffee.image ? `http://localhost:${process.env.PORT || 5000}${coffee.image}` : null
+      image: coffee.image ? `${serverUrl}${coffee.image}` : null
     }));
     res.json(coffeesWithAbsoluteImageUrls);
   } catch (error) {
@@ -124,7 +128,8 @@ exports.findOne = async (req, res) => {
       return res.status(404).json({ message: "Coffee not found" });
     }
     const coffee = rows[0];
-    coffee.image = coffee.image ? `http://localhost:${process.env.PORT || 5000}${coffee.image}` : null;
+    const serverUrl = `${req.protocol}://${req.get('host')}`;
+    coffee.image = coffee.image ? `${serverUrl}${coffee.image}` : null;
     res.json(coffee);
   } catch (error) {
     res.status(500).json({
@@ -194,7 +199,8 @@ exports.update = async (req, res) => {
       await connection.commit();
 
       // สร้าง URL แบบเต็มสำหรับรูปภาพ
-      const fullImageUrl = imageUrl ? `http://localhost:${process.env.PORT || 5000}${imageUrl}` : null;
+      const serverUrl = `${req.protocol}://${req.get('host')}`;
+      const fullImageUrl = imageUrl ? `${serverUrl}${imageUrl}` : null;
 
       res.json({ 
         message: 'อัพเดทเมนูสำเร็จ',
