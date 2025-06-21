@@ -197,7 +197,14 @@ const EditCoffee = () => {
       navigate('/menu');
     } catch (error) {
       console.error('Error updating coffee:', error);
-      setError('ไม่สามารถอัพเดทข้อมูลกาแฟได้ กรุณาลองใหม่อีกครั้ง');
+      if (error.response && error.response.data) {
+        // Log the detailed validation errors from the server
+        console.error('Server validation errors:', error.response.data);
+        const errorMsg = error.response.data.errors ? error.response.data.errors.map(e => e.msg).join(', ') : 'ข้อมูลไม่ถูกต้อง';
+        setError(`ไม่สามารถอัพเดทข้อมูลกาแฟได้: ${errorMsg}`);
+      } else {
+        setError('ไม่สามารถอัพเดทข้อมูลกาแฟได้ กรุณาลองใหม่อีกครั้ง');
+      }
     } finally {
       setLoading(false);
     }

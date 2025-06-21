@@ -219,11 +219,14 @@ const AddCoffee = () => {
         throw new Error(response.data.message || 'เกิดข้อผิดพลาดในการเพิ่มเมนู');
       }
     } catch (error) {
-      if (error.response && error.response.status === 409) {
-        alert('ชื่อเมนูนี้ถูกใช้ไปแล้ว กรุณาตั้งชื่อใหม่');
+      console.error('Error adding coffee:', error);
+      if (error.response && error.response.data) {
+        // Log the detailed validation errors from the server
+        console.error('Server validation errors:', error.response.data);
+        const errorMsg = error.response.data.errors ? error.response.data.errors.map(e => e.msg).join(', ') : 'ข้อมูลไม่ถูกต้อง';
+        alert(`ไม่สามารถเพิ่มเมนูได้: ${errorMsg}`);
       } else {
-        console.error('Error adding coffee:', error);
-        alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการเพิ่มเมนู กรุณาลองใหม่อีกครั้ง');
+        alert('ไม่สามารถเพิ่มเมนูได้ กรุณาลองใหม่อีกครั้ง');
       }
     }
   };
