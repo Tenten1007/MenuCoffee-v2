@@ -83,44 +83,10 @@ app.use(sanitizeInput);
 app.use('/api/', apiLimiter);
 app.use('/api/', speedLimiter);
 
-// กำหนด path ของโฟลเดอร์ uploads
-const uploadsDir = path.join(__dirname, 'uploads');
-
-// ตั้งค่า static files หลังจากกำหนด path ของ uploads
-app.use('/uploads', express.static(uploadsDir, {
-  setHeaders: (res, path) => {
-    // Set security headers for static files
-    res.set('X-Content-Type-Options', 'nosniff');
-    res.set('X-Frame-Options', 'DENY');
-  }
-}));
-
 // Routes
 app.use('/api/coffees', require('./routes/coffee.routes'));
 app.use('/api/orders', require('./routes/order.routes'));
 app.use('/api/staff', require('./routes/staff.routes'));
-
-// Upload route with enhanced security
-app.post('/api/upload', 
-  upload.single('image'), 
-  validateFileUpload,
-  handleUploadError,
-  (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
-      
-      res.json({ 
-        success: true,
-        url: `${process.env.CLIENT_ORIGIN || 'http://localhost:5000'}/uploads/${req.file.filename}` 
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      res.status(500).json({ error: 'File upload failed' });
-    }
-  }
-);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
