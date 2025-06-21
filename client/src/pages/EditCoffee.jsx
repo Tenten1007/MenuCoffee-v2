@@ -40,7 +40,7 @@ import {
   Layers,
   Straighten
 } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 const EditCoffee = () => {
@@ -107,7 +107,7 @@ const EditCoffee = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`http://localhost:5000/api/coffees/${id}`);
+      const response = await api.get(`/api/coffees/${id}`);
       if (response.data) {
         setFormData({
           name: response.data.name || '',
@@ -129,7 +129,7 @@ const EditCoffee = () => {
 
   const fetchMenuOptions = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/coffees/${id}/options`);
+      const response = await api.get(`/api/coffees/${id}/options`);
       setMenuOptions(response.data);
     } catch (error) {
       console.error('Error fetching menu options:', error);
@@ -188,7 +188,7 @@ const EditCoffee = () => {
         data.append('currentImage', currentImage);
       }
 
-      await axios.put(`http://localhost:5000/api/coffees/${id}`, data, {
+      await api.put(`/api/coffees/${id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
@@ -238,13 +238,13 @@ const EditCoffee = () => {
   const handleOptionSubmit = async () => {
     try {
       if (editingOption) {
-        await axios.put(
-          `http://localhost:5000/api/coffees/${id}/options/${editingOption.id}`,
+        await api.put(
+          `/api/coffees/${id}/options/${editingOption.id}`,
           optionForm
         );
       } else {
-        await axios.post(
-          `http://localhost:5000/api/coffees/${id}/options`,
+        await api.post(
+          `/api/coffees/${id}/options`,
           optionForm
         );
       }
@@ -257,7 +257,7 @@ const EditCoffee = () => {
 
   const handleDeleteOption = async (optionId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/coffees/${id}/options/${optionId}`);
+      await api.delete(`/api/coffees/${id}/options/${optionId}`);
       fetchMenuOptions();
     } catch (error) {
       console.error('Error deleting menu option:', error);

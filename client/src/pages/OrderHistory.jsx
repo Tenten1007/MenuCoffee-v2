@@ -36,7 +36,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import thLocale from 'date-fns/locale/th';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -61,8 +61,8 @@ const OrderHistory = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/orders', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.get('/api/orders', {
+        withCredentials: true,
       });
       setOrders(response.data);
     } catch (error) {

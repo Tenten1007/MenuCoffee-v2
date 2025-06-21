@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
   Typography,
@@ -56,6 +56,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import io from 'socket.io-client';
 import Navbar from '../components/Navbar';
+import api from '../api'; // Import the centralized api instance
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const Staff = () => {
   const [orders, setOrders] = useState([]);
@@ -72,6 +75,7 @@ const Staff = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const { isLoggedIn, logout } = useAuth();
+  const socketRef = useRef(null);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -80,14 +84,19 @@ const Staff = () => {
     }
     fetchOrders();
 
-    const socket = io('http://localhost:5000');
+    // Connect to WebSocket server
+    socketRef.current = io(API_URL); // Use centralized API_URL
 
-    socket.on('newOrder', (newOrder) => {
+    socketRef.current.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    socketRef.current.on('newOrder', (newOrder) => {
       console.log('New order received:', newOrder);
       setOrders((prevOrders) => [newOrder, ...prevOrders]);
     });
 
-    socket.on('updateOrder', (updatedOrder) => {
+    socketRef.current.on('updateOrder', (updatedOrder) => {
       console.log('Order updated:', updatedOrder);
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
@@ -96,7 +105,7 @@ const Staff = () => {
       );
     });
 
-    socket.on('deleteOrder', (deletedOrderId) => {
+    socketRef.current.on('deleteOrder', (deletedOrderId) => {
       console.log('Order deleted:', deletedOrderId);
       setOrders((prevOrders) =>
         prevOrders.filter((order) => order.id !== deletedOrderId)
@@ -104,7 +113,9 @@ const Staff = () => {
     });
 
     return () => {
-      socket.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
   }, [isLoggedIn, navigate]);
 
@@ -116,7 +127,7 @@ const Staff = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await api.get('/api/orders', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -163,13 +174,10 @@ const Staff = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
-        method: 'PUT',
+      const response = await api.put(`/api/orders/${orderId}`, { status: newStatus }, {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
+        }
       });
 
       if (response.status === 401) {

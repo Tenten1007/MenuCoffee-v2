@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../api'; // Import the centralized api instance
 import {
   Container,
   Typography,
@@ -38,7 +39,6 @@ import {
   Delete as DeleteIcon,
   ShoppingCart as CartIcon
 } from '@mui/icons-material';
-import axios from 'axios';
 
 const Order = () => {
   const [coffees, setCoffees] = useState([]);
@@ -57,7 +57,7 @@ const Order = () => {
 
   const fetchCoffees = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/coffees');
+      const response = await api.get('/api/coffees'); // Use api instance
       setCoffees(response.data);
     } catch (error) {
       console.error('Error fetching coffees:', error);
@@ -121,7 +121,7 @@ const Order = () => {
         orderTime: new Date().toISOString()
       };
 
-      await axios.post('http://localhost:5000/api/orders', orderData);
+      await api.post('/api/orders', orderData); // Use api instance
       setCart([]);
       setCustomerName('');
       setCartOpen(false);

@@ -27,7 +27,7 @@ import {
   Tooltip
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -206,7 +206,7 @@ const AddCoffee = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/coffees', data, {
+      const response = await api.post('/api/coffees', data, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,

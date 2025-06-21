@@ -25,7 +25,7 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 const Menu = () => {
@@ -66,7 +66,7 @@ const Menu = () => {
 
   const fetchCoffees = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/coffees');
+      const response = await api.get('/api/coffees');
       setCoffees(response.data);
     } catch (error) {
       console.error('Error fetching coffees:', error);
@@ -88,7 +88,7 @@ const Menu = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/coffees/${coffeeToDelete.id}`);
+      await api.delete(`/api/coffees/${coffeeToDelete.id}`);
       setCoffees(coffees.filter(coffee => coffee.id !== coffeeToDelete.id));
       setDeleteDialogOpen(false);
       setCoffeeToDelete(null);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -55,7 +55,7 @@ import {
   Lock
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar, { NAVBAR_HEIGHT } from '../components/Navbar';
 
@@ -93,15 +93,18 @@ const Home = () => {
 
   const fetchCoffees = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/coffees');
+      setLoading(true);
+      const response = await api.get('/api/coffees');
       setCoffees(response.data);
-    } catch (error) {
-      console.error('Error fetching coffees:', error);
+    } catch (err) {
+      setError(err);
       setSnackbar({
         open: true,
         message: 'ไม่สามารถโหลดรายการกาแฟได้',
         severity: 'error'
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -125,11 +128,11 @@ const Home = () => {
 
   const handleAddToCart = async (coffee) => {
     try {
-      // ดึงข้อมูลตัวเลือกทั้งหมด
-      const response = await axios.get(`http://localhost:5000/api/coffees/${coffee.id}/options`);
+      setLoadingOptions(true);
+      setSelectedCoffee(coffee);
+      const response = await api.get(`/api/coffees/${coffee.id}/options`);
       const options = response.data;
 
-      // จัดกลุ่มตัวเลือกตามประเภท
       const groupedOptions = options.reduce((acc, option) => {
         if (!acc[option.option_type]) {
           acc[option.option_type] = [];
@@ -138,17 +141,17 @@ const Home = () => {
         return acc;
       }, {});
 
-      // ตั้งค่าเริ่มต้นให้ว่างเปล่า
       const initialSelectedOptions = {};
       
       setMenuOptions(groupedOptions);
       setSelectedOptions(initialSelectedOptions);
       setItemNote('');
-      setSelectedCoffee(coffee);
       setOptionDialogOpen(true);
-    } catch (error) {
-      console.error('Error fetching menu options:', error);
+    } catch (err) {
+      console.error('Error fetching menu options:', err);
       alert('ไม่สามารถดึงข้อมูลตัวเลือกได้');
+    } finally {
+      setLoadingOptions(false);
     }
   };
 
@@ -187,13 +190,11 @@ const Home = () => {
   };
 
   const handleConfirmAddToCart = () => {
-    // ตรวจสอบว่าผู้ใช้ได้เลือกตัวเลือกครบทุกประเภทหรือไม่
     const allTypesSelected = Object.keys(menuOptions).every(type => selectedOptions[type]);
     if (!allTypesSelected) {
       alert('กรุณาเลือกตัวเลือกให้ครบทุกประเภท');
       return;
     }
-    // สร้าง cartItem ใหม่
     const cartItem = {
       id: selectedCoffee.id,
       name: selectedCoffee.name,
@@ -203,21 +204,18 @@ const Home = () => {
       selectedOptions: selectedOptions,
       note: itemNote
     };
-    // เช็คว่ามีสินค้า+options เดิมใน cart หรือยัง
     setCart(prev => {
       const foundIndex = prev.findIndex(item =>
         item.id === cartItem.id &&
         JSON.stringify(item.selectedOptions) === JSON.stringify(cartItem.selectedOptions)
       );
       if (foundIndex !== -1) {
-        // ถ้ามีอยู่แล้ว เพิ่ม quantity
         return prev.map((item, i) =>
           i === foundIndex
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        // ถ้าไม่มี เพิ่มใหม่
         return [...prev, cartItem];
       }
     });
@@ -265,7 +263,7 @@ const Home = () => {
         })),
         status: 'รอดำเนินการ'
       };
-      const response = await axios.post('http://localhost:5000/api/orders', orderData);
+      const response = await api.post('/api/orders', orderData);
       if (response.status === 201) {
         setCart([]);
         setCustomerName('');
@@ -300,7 +298,7 @@ const Home = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/staff/login', {
+      const response = await api.post('/api/staff/login', {
         username: staffCredentials.username,
         password: staffCredentials.password
       });

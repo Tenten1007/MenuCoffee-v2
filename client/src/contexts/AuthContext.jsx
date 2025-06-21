@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import api from '../api';
 
 const AuthContext = createContext(null);
 
@@ -6,32 +7,29 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refreshToken') || '');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ตรวจสอบ token เมื่อโหลดแอพครั้งแรก
-    const storedToken = localStorage.getItem('token');
-    const storedRefreshToken = localStorage.getItem('refreshToken');
-    
-    if (storedToken && storedRefreshToken) {
-      // ตรวจสอบว่า token หมดอายุหรือไม่
-      try {
-        const payload = JSON.parse(atob(storedToken.split('.')[1]));
-        const currentTime = Date.now() / 1000;
-        
-        if (payload.exp > currentTime) {
-          // Token ยังไม่หมดอายุ
-          setIsLoggedIn(true);
-          setToken(storedToken);
-          setRefreshToken(storedRefreshToken);
-        } else {
-          // Token หมดอายุแล้ว ลองใช้ refresh token
-          refreshAccessToken(storedRefreshToken);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // You might want to verify the token with the backend here
+          // For simplicity, we'll just set the user as logged in
+          const response = await api.post('/api/staff/refresh-token');
+          if (response.data.token) {
+            login(response.data.token);
+          } else {
+            logout();
+          }
+        } catch (error) {
+          console.error("Session check failed", error);
+          logout();
         }
-      } catch (error) {
-        // Token ไม่ถูกต้อง ลบออก
-        logout();
       }
-    }
+      setLoading(false);
+    };
+    checkAuth();
   }, []);
 
   // ฟังก์ชันสำหรับ refresh token

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Container,
   Box,
@@ -10,7 +10,8 @@ import {
   Alert
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import api from '../api'; // Import the centralized api instance
+import { AuthContext } from '../contexts/AuthContext';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -22,7 +23,7 @@ const Login = () => {
   });
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login } = useContext(AuthContext);
 
   // Get the page the user was trying to access before being redirected
   const from = location.state?.from?.pathname || '/staff';
@@ -30,27 +31,11 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/staff/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        login(data.token, data.refreshToken);
-        navigate(from, { replace: true });
-      } else {
-        setSnackbar({
-          open: true,
-          message: data.error || data.message || 'เข้าสู่ระบบไม่สำเร็จ',
-          severity: 'error'
-        });
-      }
+      const response = await api.post('/api/staff/login', { username, password }); // Use api instance
+      login(response.data.token);
+      navigate('/staff');
     } catch (error) {
+      console.error('Login failed', error);
       setSnackbar({
         open: true,
         message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ',
